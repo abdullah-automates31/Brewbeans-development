@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- SEO Meta Tags -->
+    <title>Brew Beans | Premium Artisan Coffee Shop in Karachi</title>
+    <meta name="description" content="Brew Beans - Experience handcrafted coffee, premium desserts, and unforgettable moments. Freshly brewed happiness in every cup. Dine-in, Drive-through & Delivery available in Karachi.">
+    <meta name="keywords" content="coffee shop, artisan coffee, espresso, cappuccino, latte, Karachi, premium coffee, desserts, frappes, brew beans">
+    <meta name="author" content="Brew Beans">
+    <meta name="robots" content="index, follow">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://brewbeans.pk/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://brewbeans.pk/">
+    <meta property="og:title" content="Brew Beans | Premium Artisan Coffee Shop">
+    <meta property="og:description" content="Experience handcrafted coffee, premium desserts, and unforgettable moments. Freshly brewed happiness in every cup.">
+    <meta property="og:image" content="https://brewbeans.pk/assets/og-image.jpg">
+    <meta property="og:site_name" content="Brew Beans">
+    <meta property="og:locale" content="en_PK">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://brewbeans.pk/">
+    <meta property="twitter:title" content="Brew Beans | Premium Artisan Coffee Shop">
+    <meta property="twitter:description" content="Experience handcrafted coffee, premium desserts, and unforgettable moments. Freshly brewed happiness in every cup.">
+    <meta property="twitter:image" content="https://brewbeans.pk/assets/og-image.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://images.unsplash.com">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- AOS Animation Library -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Structured Data / JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CafeOrCoffeeShop",
+        "name": "Brew Beans",
+        "image": "https://brewbeans.pk/assets/shop-exterior.jpg",
+        "@id": "https://brewbeans.pk",
+        "url": "https://brewbeans.pk",
+        "telephone": "+92-311-2463092",
+        "priceRange": "$$",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Shop No. 6, Plot SB, Rab Medical Center, Block 2 Gulshan-e-Iqbal",
+            "addressLocality": "Karachi",
+            "addressRegion": "Sindh",
+            "postalCode": "75300",
+            "addressCountry": "PK"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 24.9180,
+            "longitude": 67.0971
+        },
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                "opens": "07:00",
+                "closes": "23:00"
+            }
+        ],
+        "servesCuisine": "Coffee, Desserts, Sandwiches",
+        "acceptsReservations": true,
+        "paymentAccepted": "Cash, Credit Card, Mobile Payment",
+        "currenciesAccepted": "PKR"
+    }
+    </script>
+<base target="_blank">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="coffee-cup">
+                <div class="cup">
+                    <div class="coffee"></div>
+                </div>
+                <div class="saucer"></div>
+                <div class="steam steam-1"></div>
+                <div class="steam steam-2"></div>
+                <div class="steam steam-3"></div>
+            </div>
+            <h2 class="loading-text">Brew Beans</h2>
+            <p class="loading-subtext">Brewing something special...</p>
+        </div>
+    </div>
+
+    <!-- Location Permission Modal -->
+    <div class="modal fade" id="locationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content location-modal">
+                <div class="modal-body text-center p-5">
+                    <div class="location-icon mb-4">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h3 class="modal-title mb-3">Enable Location Services</h3>
+                    <p class="text-muted mb-4">Allow us to access your location for accurate delivery estimates, nearby store suggestions, and personalized service.</p>
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-primary btn-lg" id="allowLocation">
+                            <i class="bi bi-geo-alt me-2"></i>Allow Location Access
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="denyLocation" data-bs-dismiss="modal">
+                            Not Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <span class="brand-icon">☕</span>
+                <span class="brand-text">Brew<span class="brand-accent">Beans</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <button class="btn btn-cart" id="cartToggle">
+                            <i class="bi bi-bag"></i>
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h4><i class="bi bi-bag me-2"></i>Your Order</h4>
+            <button class="btn-close-cart" id="closeCart"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="cart-body" id="cartBody">
+            <div class="empty-cart" id="emptyCart">
+                <i class="bi bi-bag-x"></i>
+                <p>Your cart is empty</p>
+                <span class="text-muted">Add some delicious items!</span>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">Rs. 0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Delivery</span>
+                    <span id="deliveryCharge">Rs. 0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="grandTotal">Rs. 0</span>
+                </div>
+            </div>
+            <button class="btn btn-checkout w-100" id="checkoutBtn">
+                <i class="bi bi-credit-card me-2"></i>Proceed to Checkout
+            </button>
+        </div>
+    </div>
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10 text-center" data-aos="fade-up" data-aos-duration="1200">
+                        <span class="hero-badge">
+                            <i class="bi bi-star-fill me-1"></i>Premium Artisan Coffee
+                        </span>
+                        <h1 class="hero-title">Freshly Brewed Happiness<br>in Every Cup</h1>
+                        <p class="hero-subtitle">Experience handcrafted coffee, premium desserts, and unforgettable moments in the heart of Karachi.</p>
+                        <div class="hero-buttons">
+                            <a href="#menu" class="btn btn-primary btn-lg me-3">
+                                <i class="bi bi-cup-hot me-2"></i>Order Now
+                            </a>
+                            <a href="#menu" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-journal-text me-2"></i>View Menu
+                            </a>
+                        </div>
+                        <div class="hero-stats mt-5">
+                            <div class="row g-4">
+                                <div class="col-4" data-aos="fade-up" data-aos-delay="200">
+                                    <div class="stat-item">
+                                        <span class="stat-number">15K+</span>
+                                        <span class="stat-label">Happy Customers</span>
+                                    </div>
+                                </div>
+                                <div class="col-4" data-aos="fade-up" data-aos-delay="300">
+                                    <div class="stat-item">
+                                        <span class="stat-number">50+</span>
+                                        <span class="stat-label">Coffee Varieties</span>
+                                    </div>
+                                </div>
+                                <div class="col-4" data-aos="fade-up" data-aos-delay="400">
+                                    <div class="stat-item">
+                                        <span class="stat-number">4.9</span>
+                                        <span class="stat-label">Average Rating</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <a href="#about" class="scroll-down">
+                <span></span>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about section-padding" id="about">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="about-images">
+                        <div class="about-img-main">
+                            <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=700&fit=crop" alt="Brew Beans Coffee Shop Interior" loading="lazy">
+                        </div>
+                        <div class="about-img-float">
+                            <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300&h=300&fit=crop" alt="Coffee Art" loading="lazy">
+                        </div>
+                        <div class="experience-badge">
+                            <span class="exp-number">8+</span>
+                            <span class="exp-text">Years of<br>Excellence</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="about-content">
+                        <span class="section-label">Our Story</span>
+                        <h2 class="section-title">Where Every Cup<br>Tells a Story</h2>
+                        <p class="section-text">Founded in 2018, Brew Beans began with a simple mission: to bring the world's finest coffee experiences to Karachi. What started as a small corner shop has blossomed into a beloved community gathering place.</p>
+                        <p class="section-text">We source our beans directly from ethical farms in Ethiopia, Colombia, and Guatemala, ensuring every sip supports sustainable farming practices while delivering unmatched flavor profiles.</p>
+
+                        <div class="about-features mt-4">
+                            <div class="about-feature">
+                                <div class="feature-icon">
+                                    <i class="bi bi-cup-hot"></i>
+                                </div>
+                                <div class="feature-info">
+                                    <h5>Artisan Roasting</h5>
+                                    <p>Small-batch roasted for peak flavor</p>
+                                </div>
+                            </div>
+                            <div class="about-feature">
+                                <div class="feature-icon">
+                                    <i class="bi bi-heart"></i>
+                                </div>
+                                <div class="feature-info">
+                                    <h5>Made with Love</h5>
+                                    <p>Every drink crafted with passion</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="#menu" class="btn btn-primary mt-4">
+                            <i class="bi bi-arrow-right me-2"></i>Explore Our Menu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories section-padding bg-light" id="categories">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">What We Offer</span>
+                <h2 class="section-title">Our Categories</h2>
+                <p class="section-subtitle">From steaming hot brews to icy refreshments</p>
+            </div>
+            <div class="row g-4 mt-2">
+                <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="category-card" data-category="hot-coffee">
+                        <div class="category-icon">
+                            <i class="bi bi-cup-hot"></i>
+                        </div>
+                        <h4>Hot Coffee</h4>
+                        <p>Classic brews & espresso</p>
+                        <span class="category-count">12 Items</span>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="category-card" data-category="cold-coffee">
+                        <div class="category-icon">
+                            <i class="bi bi-cup-straw"></i>
+                        </div>
+                        <h4>Cold Coffee</h4>
+                        <p>Iced & cold brews</p>
+                        <span class="category-count">8 Items</span>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="category-card" data-category="frappes">
+                        <div class="category-icon">
+                            <i class="bi bi-snow"></i>
+                        </div>
+                        <h4>Frappes</h4>
+                        <p>Blended icy delights</p>
+                        <span class="category-count">6 Items</span>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                    <div class="category-card" data-category="desserts">
+                        <div class="category-icon">
+                            <i class="bi bi-cake2"></i>
+                        </div>
+                        <h4>Desserts</h4>
+                        <p>Sweet indulgences</p>
+                        <span class="category-count">10 Items</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section class="menu section-padding" id="menu">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">Our Menu</span>
+                <h2 class="section-title">Crafted with Passion</h2>
+                <p class="section-subtitle">Discover our signature selections</p>
+            </div>
+
+            <!-- Menu Filters -->
+            <div class="menu-filters" data-aos="fade-up" data-aos-delay="100">
+                <button class="filter-btn active" data-filter="all">All Items</button>
+                <button class="filter-btn" data-filter="hot-coffee">Hot Coffee</button>
+                <button class="filter-btn" data-filter="cold-coffee">Cold Coffee</button>
+                <button class="filter-btn" data-filter="frappes">Frappes</button>
+                <button class="filter-btn" data-filter="desserts">Desserts</button>
+                <button class="filter-btn" data-filter="sandwiches">Sandwiches</button>
+            </div>
+
+            <!-- Menu Grid -->
+            <div class="row g-4" id="menuGrid">
+                <!-- Items will be rendered by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-us section-padding bg-primary-dark" id="why-us">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label text-white-50">Why Brew Beans</span>
+                <h2 class="section-title text-white">The Brew Beans Difference</h2>
+                <p class="section-subtitle text-white-50">What makes us special</p>
+            </div>
+            <div class="row g-4 mt-2">
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                    <div class="why-card">
+                        <div class="why-icon">
+                            <i class="bi bi-seedling"></i>
+                        </div>
+                        <h4>Fresh Beans</h4>
+                        <p>Ethically sourced and freshly roasted weekly for maximum aroma and flavor.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                    <div class="why-card">
+                        <div class="why-icon">
+                            <i class="bi bi-award"></i>
+                        </div>
+                        <h4>Premium Quality</h4>
+                        <p>Only the top 1% of Arabica beans make it into our signature blends.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                    <div class="why-card">
+                        <div class="why-icon">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h4>Fast Delivery</h4>
+                        <p>Hot and fresh to your door within 30 minutes. Guaranteed satisfaction.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                    <div class="why-card">
+                        <div class="why-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h4>Hygienic Prep</h4>
+                        <p>ISO-certified kitchen with strict hygiene protocols and contactless options.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3 offset-lg-1-5" data-aos="fade-up" data-aos-delay="500">
+                    <div class="why-card">
+                        <div class="why-icon">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <h4>Cozy Environment</h4>
+                        <p>Warm, inviting spaces designed for work, relaxation, and connection.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery section-padding" id="gallery">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">Gallery</span>
+                <h2 class="section-title">A Visual Journey</h2>
+                <p class="section-subtitle">Moments captured at Brew Beans</p>
+            </div>
+            <div class="row g-3 mt-2">
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 190414.png" alt="Coffee Brewing" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="150">
+                    <div class="gallery-item">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop" alt="Latte Art" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 190422.png" alt="Coffee Shop" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="250">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 201116.png" alt="Cafe Interior" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="gallery-item">
+                        <img src="./b1.png" alt="Coffee Beans" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="350">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 201209.png" alt="Pastries" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 201307.png" alt="Espresso Machine" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="450">
+                    <div class="gallery-item">
+                        <img src="./Screenshot 2026-06-13 201324.png" alt="Coffee Cup" loading="lazy">
+                        <div class="gallery-overlay">
+                            <i class="bi bi-zoom-in"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews section-padding bg-light" id="reviews">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">Testimonials</span>
+                <h2 class="section-title">What Our Customers Say</h2>
+                <p class="section-subtitle">Real stories from real coffee lovers</p>
+            </div>
+            <div class="row g-4 mt-2">
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="review-text">"The best cappuccino in Karachi! The ambiance is perfect for both work meetings and casual hangouts. Their caramel frappe is absolutely addictive."</p>
+                        <div class="reviewer">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop&crop=face" alt="Sarah Ahmed" class="reviewer-img" loading="lazy">
+                            <div class="reviewer-info">
+                                <h5>Sarah Ahmed</h5>
+                                <span>Regular Customer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="review-text">"I order from Brew Beans every morning before work. Their delivery is always on time and the coffee arrives hot. The mocha is my daily fuel!"</p>
+                        <div class="reviewer">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt="Omar Khan" class="reviewer-img" loading="lazy">
+                            <div class="reviewer-info">
+                                <h5>Omar Khan</h5>
+                                <span>Business Professional</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="review-card">
+                        <div class="review-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <p class="review-text">"The chocolate brownie paired with their signature espresso is heavenly. The staff is incredibly friendly and remembers my order every time."</p>
+                        <div class="reviewer">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face" alt="Ayesha Malik" class="reviewer-img" loading="lazy">
+                            <div class="reviewer-info">
+                                <h5>Ayesha Malik</h5>
+                                <span>Food Blogger</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact section-padding" id="contact">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">Get In Touch</span>
+                <h2 class="section-title">Visit Us Today</h2>
+                <p class="section-subtitle">We'd love to hear from you</p>
+            </div>
+            <div class="row g-5 mt-2">
+                <div class="col-lg-5" data-aos="fade-right">
+                    <div class="contact-info">
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Address</h5>
+                                <p>Shop No. 6, Plot SB, Rab Medical Center,<br>Block 2 Gulshan-e-Iqbal,<br>Karachi, Pakistan</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Phone</h5>
+                                <p><a href="tel:+923112463092">+92 311 2463092</a></p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Opening Hours</h5>
+                                <p>Mon - Sun: 7:00 AM - 11:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="contact-card">
+                            <div class="contact-icon">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h5>Services</h5>
+                                <p>Dine In • Drive Through • No Contact Delivery</p>
+                            </div>
+                        </div>
+
+                        <div class="social-links mt-4">
+                            <a href="#" class="social-link" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="social-link" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="social-link" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                            <a href="#" class="social-link" aria-label="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7" data-aos="fade-left">
+                    <div class="map-container">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3619.4405!2d67.0971!3d24.9180!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDU1JzA0LjgiTiA2N8KwMDUnNDkuNiJF!5e0!3m2!1sen!2s!4v1609459200000!5m2!1sen!2s"
+                            width="100%" 
+                            height="100%" 
+                            style="border:0; min-height: 400px;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade"
+                            title="Brew Beans Location Map">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="row g-5">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-brand">
+                            <a class="navbar-brand mb-3" href="#home">
+                                <span class="brand-icon">☕</span>
+                                <span class="brand-text">Brew<span class="brand-accent">Beans</span></span>
+                            </a>
+                            <p class="footer-text">Crafting moments of joy through exceptional coffee and warm hospitality since 2018. Your daily dose of happiness.</p>
+                            <div class="footer-social">
+                                <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                                <a href="https://www.instagram.com/brewbeans.karachi/" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><i class="bi bi-instagram"></i></a>
+                                <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                                <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-links">
+                            <h5>Quick Links</h5>
+                            <ul>
+                                <li><a href="#home">Home</a></li>
+                                <li><a href="#about">About Us</a></li>
+                                <li><a href="#menu">Our Menu</a></li>
+                                <li><a href="#gallery">Gallery</a></li>
+                                <li><a href="#contact">Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-links">
+                            <h5>Services</h5>
+                            <ul>
+                                <li><a href="#">Dine In</a></li>
+                                <li><a href="#">Drive Through</a></li>
+                                <li><a href="#">Delivery</a></li>
+                                <li><a href="#">Catering</a></li>
+                                <li><a href="#">Private Events</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-newsletter">
+                            <h5>Newsletter</h5>
+                            <p>Subscribe for exclusive offers, new menu updates, and coffee tips.</p>
+                            <form class="newsletter-form" id="newsletterForm">
+                                <div class="input-group">
+                                    <input type="email" class="form-control" placeholder="Your email address" required>
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="copyright">&copy; 2026 Brew Beans. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="footer-bottom-links">
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Terms of Service</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content checkout-modal">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="bi bi-credit-card me-2"></i>Checkout</h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-7 checkout-form-section">
+                            <div class="p-4">
+                                <h5 class="mb-4">Delivery Details</h5>
+                                <form id="checkoutForm">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Full Name *</label>
+                                            <input type="text" class="form-control" id="fullName" required placeholder="John Doe">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number *</label>
+                                            <input type="tel" class="form-control" id="phoneNumber" required placeholder="+92 300 1234567">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Email Address</label>
+                                            <input type="email" class="form-control" id="email" placeholder="john@example.com">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Delivery Address *</label>
+                                            <textarea class="form-control" id="address" rows="2" required placeholder="House #, Street, Area"></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Current Location</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="currentLocation" readonly placeholder="Detecting location...">
+                                                <button class="btn btn-outline-secondary" type="button" id="detectLocation">
+                                                    <i class="bi bi-geo-alt"></i>
+                                                </button>
+                                            </div>
+                                            <div class="delivery-estimate mt-2" id="deliveryEstimate" style="display: none;">
+                                                <div class="estimate-item">
+                                                    <i class="bi bi-geo"></i>
+                                                    <span id="deliveryDistance">-- km</span>
+                                                </div>
+                                                <div class="estimate-item">
+                                                    <i class="bi bi-clock"></i>
+                                                    <span id="deliveryTime">-- mins</span>
+                                                </div>
+                                                <div class="estimate-item">
+                                                    <i class="bi bi-truck"></i>
+                                                    <span id="deliveryCost">Rs. --</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Order Notes</label>
+                                            <textarea class="form-control" id="orderNotes" rows="2" placeholder="Any special instructions?"></textarea>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-lg-5 checkout-summary-section">
+                            <div class="p-4">
+                                <h5 class="mb-4">Order Summary</h5>
+                                <div class="checkout-items" id="checkoutItems"></div>
+                                <div class="checkout-totals mt-4 pt-3 border-top">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Subtotal</span>
+                                        <span id="checkoutSubtotal">Rs. 0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Delivery</span>
+                                        <span id="checkoutDelivery">Rs. 0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between total-row mt-3 pt-3">
+                                        <span>Total</span>
+                                        <span id="checkoutTotal">Rs. 0</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-checkout w-100 mt-4" id="placeOrderBtn">
+                                    <i class="bi bi-check-circle me-2"></i>Place Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content success-modal">
+                <div class="modal-body text-center p-5">
+                    <div class="success-icon mb-4">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h3>Order Placed Successfully!</h3>
+                    <p class="text-muted mb-4">Thank you for choosing Brew Beans. Your delicious order is being prepared and will be delivered soon.</p>
+                    <div class="order-details mb-4" id="orderDetails"></div>
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">
+                        <i class="bi bi-house me-2"></i>Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose"><i class="bi bi-x-lg"></i></button>
+        <img src="" alt="Gallery Image" id="lightboxImg">
+    </div>
+
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+
+    <!-- AOS Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+</html>
