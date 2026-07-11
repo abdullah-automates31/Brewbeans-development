@@ -320,10 +320,10 @@ $(document).ready(function () {
     // AOS ANIMATIONS
     // ==========================================
     AOS.init({
-        duration: 800,
+        duration: 450,
         easing: 'ease-out-cubic',
         once: true,
-        offset: 100,
+        offset: 60,
         disable: function () {
             return window.innerWidth < 768;
         }
@@ -821,6 +821,33 @@ $(document).ready(function () {
             $(this)[0].reset();
         }
     });
+
+    // ==========================================
+    // CONTACT FORM
+    // ==========================================
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!contactForm.checkValidity()) {
+                contactForm.classList.add('was-validated');
+                return;
+            }
+
+            const $btn = $('#contactSubmitBtn');
+            const originalHtml = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bi bi-arrow-repeat spin me-2"></i>Sending...');
+
+            setTimeout(() => {
+                showToast("Thanks for reaching out! We'll get back to you soon.");
+                contactForm.reset();
+                contactForm.classList.remove('was-validated');
+                $btn.prop('disabled', false).html(originalHtml);
+            }, 800);
+        });
+    }
 
     // ==========================================
     // TOAST NOTIFICATION
