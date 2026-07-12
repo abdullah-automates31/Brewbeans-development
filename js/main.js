@@ -319,15 +319,7 @@ $(document).ready(function () {
     // ==========================================
     // AOS ANIMATIONS
     // ==========================================
-    AOS.init({
-        duration: 450,
-        easing: 'ease-out-cubic',
-        once: true,
-        offset: 60,
-        disable: function () {
-            return window.innerWidth < 768;
-        }
-    });
+    // AOS init + scroll progress bar live in js/scroll-fx.js (shared across pages)
 
     // ==========================================
     // MENU RENDERING

@@ -132,7 +132,14 @@ async function trackOrder(orderNumber, phone, silent) {
     $('#trackTotal').text(`Rs. ${order.total}`);
 
     $('#lastUpdated').text(`Live — last checked ${new Date().toLocaleTimeString()}`);
-    $('#trackResult').show();
+    const $result = $('#trackResult');
+    const wasHidden = $result.is(':hidden');
+    $result.show();
+    if (wasHidden) {
+        $result.removeClass('reveal-card');
+        void $result[0].offsetWidth;
+        $result.addClass('reveal-card');
+    }
 
     if (order.status === 'delivered' || order.status === 'cancelled') {
         stopPolling();

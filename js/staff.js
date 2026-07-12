@@ -78,6 +78,7 @@ $('#searchInput').on('input', function () { renderOrders(); });
 function showOrdersView() {
     $('#loginView').hide();
     $('#ordersView').show();
+    if (typeof AOS !== 'undefined') AOS.refresh();
     loadOrders(true);
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(() => loadOrders(false), 15000);
@@ -153,7 +154,7 @@ function renderOrders() {
     }
     $('#noOrders').hide();
 
-    orders.forEach(order => {
+    orders.forEach((order, index) => {
         const itemsHtml = (order.items || [])
             .map(i => `${i.quantity}x ${escapeHtml(i.name)}`)
             .join(', ');
@@ -164,7 +165,7 @@ function renderOrders() {
             .join('');
 
         const $card = $(`
-            <div class="staff-order-card">
+            <div class="staff-order-card reveal-card" style="animation-delay: ${Math.min(index * 60, 480)}ms">
                 <div class="staff-order-header">
                     <div>
                         <strong>${escapeHtml(order.order_number)}</strong>
