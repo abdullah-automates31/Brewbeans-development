@@ -2435,6 +2435,63 @@ textarea:focus-visible {
 }
 
 /* ============================================
+   DRAMATIC AOS OVERRIDES — slide in from the sides
+   Elements travel from far off-screen and converge
+   to their final position in the center of the row
+   ============================================ */
+[data-aos="fade-right"] {
+    transform: translate3d(-400px, 0, 0) !important;
+    opacity: 0;
+    transition-property: transform, opacity;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-aos="fade-right"].aos-animate {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1;
+}
+
+[data-aos="fade-left"] {
+    transform: translate3d(400px, 0, 0) !important;
+    opacity: 0;
+    transition-property: transform, opacity;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-aos="fade-left"].aos-animate {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1;
+}
+
+[data-aos="fade-up"] {
+    transform: translate3d(0, 80px, 0) !important;
+    opacity: 0;
+}
+[data-aos="fade-up"].aos-animate {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1;
+}
+
+[data-aos="fade-down"] {
+    transform: translate3d(0, -80px, 0) !important;
+    opacity: 0;
+}
+[data-aos="fade-down"].aos-animate {
+    transform: translate3d(0, 0, 0) !important;
+    opacity: 1;
+}
+
+[data-aos="zoom-in-up"] {
+    transform: translate3d(0, 60px, 0) scale(0.7) !important;
+    opacity: 0;
+}
+[data-aos="zoom-in-up"].aos-animate {
+    transform: translate3d(0, 0, 0) scale(1) !important;
+    opacity: 1;
+}
+
+/* Prevent horizontal scrollbars from the huge translateX starts */
+body { overflow-x: hidden; }
+
+/* ============================================
    SCROLL PROGRESS BAR (all pages)
    ============================================ */
 .scroll-progress {

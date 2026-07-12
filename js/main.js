@@ -321,10 +321,11 @@ $(document).ready(function () {
     // ==========================================
     if (typeof AOS !== 'undefined') {
         AOS.init({
-            duration: 600,
+            duration: 900,
             easing: 'ease-out-cubic',
             once: true,
-            offset: 60
+            offset: 80,
+            anchorPlacement: 'top-bottom'
         });
         window.__aosInitialized = true;
     }
@@ -340,9 +341,14 @@ $(document).ready(function () {
             ? menuItems
             : menuItems.filter(item => item.category === filter);
 
-        filteredItems.forEach((item) => {
+        filteredItems.forEach((item, i) => {
+            // Alternate: col 0 & 2 slide from left, col 1 & 3 slide from right.
+            // Each row (4 cards on lg) converges toward the middle.
+            const col = i % 4;
+            const anim = (col === 0 || col === 2) ? 'fade-right' : 'fade-left';
+            const delay = (col * 100);
             const html = `
-                <div class="col-12 col-md-6 col-lg-3">
+                <div class="col-12 col-md-6 col-lg-3" data-aos="${anim}" data-aos-delay="${delay}">
                     <div class="menu-item" data-id="${item.id}">
                         <div class="menu-item-img">
                             <img src="${item.image}" alt="${item.name}" loading="lazy">
@@ -364,7 +370,7 @@ $(document).ready(function () {
             $grid.append(html);
         });
 
-        if (window.innerWidth >= 768 && typeof AOS !== 'undefined' && AOS.refresh) {
+        if (typeof AOS !== 'undefined' && AOS.refresh) {
             AOS.refresh();
         }
     }
