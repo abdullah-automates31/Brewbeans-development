@@ -319,17 +319,8 @@ $(document).ready(function () {
     // ==========================================
     // AOS ANIMATIONS
     // ==========================================
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 900,
-            easing: 'ease-out-cubic',
-            once: false,
-            mirror: true,
-            offset: 120,
-            anchorPlacement: 'center-bottom'
-        });
-        window.__aosInitialized = true;
-    }
+    // Scroll animations handled by js/reveal.js (custom IntersectionObserver).
+    // No AOS on index.html — it fought our CSS overrides.
 
     // ==========================================
     // MENU RENDERING
@@ -346,10 +337,10 @@ $(document).ready(function () {
             // Alternate: col 0 & 2 slide from left, col 1 & 3 slide from right.
             // Each row (4 cards on lg) converges toward the middle.
             const col = i % 4;
-            const anim = (col === 0 || col === 2) ? 'fade-right' : 'fade-left';
+            const anim = (col === 0 || col === 2) ? 'reveal-left' : 'reveal-right';
             const delay = (col * 100);
             const html = `
-                <div class="col-12 col-md-6 col-lg-3" data-aos="${anim}" data-aos-delay="${delay}">
+                <div class="col-12 col-md-6 col-lg-3 reveal ${anim}" data-reveal-delay="${delay}">
                     <div class="menu-item" data-id="${item.id}">
                         <div class="menu-item-img">
                             <img src="${item.image}" alt="${item.name}" loading="lazy">
@@ -371,9 +362,8 @@ $(document).ready(function () {
             $grid.append(html);
         });
 
-        if (typeof AOS !== 'undefined' && AOS.refresh) {
-            AOS.refresh();
-        }
+        // Re-scan new .reveal elements added by the render
+        if (typeof window.__initReveal === 'function') window.__initReveal();
     }
 
     // Initial render
