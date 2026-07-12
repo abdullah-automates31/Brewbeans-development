@@ -319,7 +319,15 @@ $(document).ready(function () {
     // ==========================================
     // AOS ANIMATIONS
     // ==========================================
-    // AOS init + scroll progress bar live in js/scroll-fx.js (shared across pages)
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 600,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 60
+        });
+        window.__aosInitialized = true;
+    }
 
     // ==========================================
     // MENU RENDERING
@@ -356,7 +364,7 @@ $(document).ready(function () {
             $grid.append(html);
         });
 
-        if (window.innerWidth >= 768) {
+        if (window.innerWidth >= 768 && typeof AOS !== 'undefined' && AOS.refresh) {
             AOS.refresh();
         }
     }
