@@ -323,9 +323,10 @@ $(document).ready(function () {
         AOS.init({
             duration: 900,
             easing: 'ease-out-cubic',
-            once: true,
-            offset: 80,
-            anchorPlacement: 'top-bottom'
+            once: false,
+            mirror: true,
+            offset: 120,
+            anchorPlacement: 'center-bottom'
         });
         window.__aosInitialized = true;
     }

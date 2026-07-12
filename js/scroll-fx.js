@@ -4,10 +4,12 @@
     if (typeof AOS !== 'undefined' && !window.__aosInitialized) {
         try {
             AOS.init({
-                duration: 600,
+                duration: 900,
                 easing: 'ease-out-cubic',
-                once: true,
-                offset: 40
+                once: false,
+                mirror: true,
+                offset: 120,
+                anchorPlacement: 'center-bottom'
             });
             window.__aosInitialized = true;
         } catch (e) { /* ignore */ }
