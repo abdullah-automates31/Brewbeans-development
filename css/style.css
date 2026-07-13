@@ -245,8 +245,8 @@ img {
     font-size: 1.25rem;
 }
 
-#mainNav.scrolled .brand-icon {
-    font-size: 1.5rem;
+#mainNav.scrolled .brand-logo {
+    height: 32px;
 }
 
 .navbar-brand {
@@ -258,8 +258,10 @@ img {
     color: var(--accent) !important;
 }
 
-.brand-icon {
-    font-size: 1.8rem;
+.brand-logo {
+    height: 48px;
+    width: auto;
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .brand-text {
@@ -1579,6 +1581,10 @@ img {
 .footer-brand .navbar-brand {
     font-size: 1.75rem;
     margin-bottom: 1rem;
+}
+
+.footer-brand .brand-logo {
+    height: 56px;
 }
 
 .footer-text {
