@@ -43,6 +43,8 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 body {
@@ -51,6 +53,8 @@ body {
     background-color: var(--accent);
     line-height: 1.6;
     overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -379,20 +383,21 @@ img {
 .cart-sidebar {
     position: fixed;
     top: 0;
-    right: -420px;
+    right: 0;
     width: 100%;
     max-width: 420px;
     height: 100vh;
     background: var(--accent);
     z-index: 1050;
-    transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
 }
 
 .cart-sidebar.open {
-    right: 0;
+    transform: translateX(0);
 }
 
 .cart-overlay {
@@ -2012,7 +2017,6 @@ img {
 
     .cart-sidebar {
         max-width: 100%;
-        right: -100%;
     }
 
     .checkout-modal .modal-dialog {
