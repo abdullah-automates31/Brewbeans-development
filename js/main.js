@@ -340,9 +340,11 @@ $(document).ready(function () {
             ? menuItems
             : menuItems.filter(item => item.category === filter);
 
-        filteredItems.forEach((item) => {
+        filteredItems.forEach((item, index) => {
+            const aosDirection = index % 2 === 0 ? 'fade-right' : 'fade-left';
+            const aosDelay = (index % 4) * 75;
             const html = `
-                <div class="col-12 col-md-6 col-lg-3">
+                <div class="col-12 col-md-6 col-lg-3" data-aos="${aosDirection}" data-aos-delay="${aosDelay}">
                     <div class="menu-item" data-id="${item.id}">
                         <div class="menu-item-img">
                             <img src="${item.image}" alt="${item.name}" loading="lazy">
@@ -364,8 +366,8 @@ $(document).ready(function () {
             $grid.append(html);
         });
 
-        if (window.innerWidth >= 768) {
-            AOS.refresh();
+        if (typeof AOS !== 'undefined') {
+            AOS.refreshHard();
         }
     }
 
