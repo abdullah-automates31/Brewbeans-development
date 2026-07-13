@@ -225,18 +225,28 @@ img {
    NAVIGATION
    ============================================ */
 #mainNav {
-    padding: 1rem 0;
-    transition: var(--transition);
+    padding: 1.5rem 0;
+    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: transparent;
     z-index: 1030;
 }
 
 #mainNav.scrolled {
-    background: rgba(15, 61, 46, 0.95);
+    background: rgba(15, 61, 46, 0.98);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 0.5rem 0;
-    box-shadow: var(--shadow);
+    padding: 0.25rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+#mainNav.scrolled .navbar-brand {
+    font-size: 1.25rem;
+}
+
+#mainNav.scrolled .brand-icon {
+    font-size: 1.5rem;
 }
 
 .navbar-brand {
