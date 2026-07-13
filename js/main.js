@@ -366,7 +366,7 @@ $(document).ready(function () {
             $grid.append(html);
         });
 
-        if (typeof AOS !== 'undefined') {
+        if (typeof AOS !== 'undefined' && window.innerWidth >= 768) {
             AOS.refreshHard();
         }
     }

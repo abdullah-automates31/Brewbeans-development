@@ -118,6 +118,19 @@ img {
     text-align: center;
 }
 
+.loading-logo {
+    width: 220px;
+    max-width: 70vw;
+    height: auto;
+    margin-bottom: 20px;
+    animation: loadingPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+}
+
 .coffee-cup {
     position: relative;
     width: 80px;
