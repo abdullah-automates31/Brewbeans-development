@@ -987,6 +987,12 @@ html.bb-no-splash #loading-screen {
     cursor: pointer;
     position: relative;
     overflow: hidden;
+    /* Fill the grid column height so every card in a row matches the
+       tallest one, instead of shrinking to its own (shorter) text. */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .category-card::before {
@@ -2295,7 +2301,11 @@ textarea:focus-visible {
     }
     
     .navbar-nav .nav-link {
-        display: block;
+        /* inline-block (not a full-width block) so the active-state
+           underline below sizes itself to the actual word, not the
+           full menu width — matches desktop behavior. Horizontal
+           padding is 0 either way, so tap width is unaffected. */
+        display: inline-block;
         padding: 12px 0;
     }
 }
