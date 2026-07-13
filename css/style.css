@@ -1410,6 +1410,26 @@ html.bb-no-splash #loading-screen {
     border: 2px solid var(--border);
 }
 
+.reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.review-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .reviewer-info h5 {
     font-weight: 600;
     color: var(--primary);
