@@ -174,8 +174,21 @@ $(document).ready(function () {
 
     const params = new URLSearchParams(window.location.search);
     const order = params.get('order');
-    const phone = params.get('phone');
     const payment = params.get('payment');
+
+    // Phone is handed off via sessionStorage (set at checkout) rather than a
+    // URL query param, so it never ends up in browser history or server logs.
+    // Fall back to a legacy ?phone= param for any old links still in the wild.
+    let phone = params.get('phone');
+    if (order) {
+        try {
+            const stored = sessionStorage.getItem(`bb_phone_${order}`);
+            if (stored) {
+                phone = stored;
+                sessionStorage.removeItem(`bb_phone_${order}`);
+            }
+        } catch (e) { /* sessionStorage unavailable */ }
+    }
 
     if (order) $('#orderNumberInput').val(order);
     if (phone) $('#phoneInput').val(phone);

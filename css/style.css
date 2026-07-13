@@ -112,6 +112,13 @@ img {
     transition: opacity 0.8s ease, visibility 0.8s ease;
 }
 
+/* Splash only plays on the first load of a browser session; repeat visits
+   (refreshes, navigating back) skip it entirely via a class set by an
+   inline script that runs before this element paints. */
+html.bb-no-splash #loading-screen {
+    display: none;
+}
+
 #loading-screen.hidden {
     opacity: 0;
     visibility: hidden;
@@ -284,6 +291,10 @@ img {
 .brand-text {
     font-family: var(--font-display);
     letter-spacing: 1px;
+}
+
+.tracking-brand-logo {
+    height: 60px;
 }
 
 .brand-accent {
@@ -2302,6 +2313,68 @@ textarea:focus-visible {
 .payment-method-option:has(input:checked) {
     border-color: var(--secondary);
     background: rgba(46, 139, 87, 0.06);
+}
+
+/* ============================================
+   LEGAL PAGES (Privacy Policy / Terms of Service)
+   ============================================ */
+.legal-page {
+    min-height: 100vh;
+    padding: 60px 0 80px;
+    background: var(--accent-dark);
+}
+
+.legal-card {
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--accent);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 48px;
+}
+
+.legal-card h1 {
+    font-family: var(--font-display);
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+}
+
+.legal-card .legal-updated {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.legal-card h2 {
+    font-family: var(--font-display);
+    color: var(--primary);
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+}
+
+.legal-card p,
+.legal-card li {
+    color: var(--text-medium);
+    line-height: 1.7;
+}
+
+.legal-card ul {
+    padding-left: 1.25rem;
+}
+
+.legal-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--secondary);
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 24px;
+}
+
+.legal-back-link:hover {
+    color: var(--secondary-light);
 }
 
 /* ============================================

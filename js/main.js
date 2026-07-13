@@ -759,11 +759,18 @@ $(document).ready(function () {
         const eta = new Date(Date.now() + (prepMin + legMin) * 60000);
         const etaLabel = eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+        // Hand the phone number off via sessionStorage instead of the URL —
+        // query params end up in browser history and server logs, which is
+        // not where a customer's phone number should live.
+        try {
+            sessionStorage.setItem(`bb_phone_${orderNumber}`, phone);
+        } catch (e) { /* sessionStorage unavailable; tracking page will ask for phone manually */ }
+
         $('#orderDetails').html(`
             <p class="mb-1"><strong>Order ID:</strong> ${orderNumber}</p>
             <p class="mb-1"><strong>Total:</strong> Rs. ${total}</p>
             <p class="mb-3"><strong>Estimated ready by:</strong> ${etaLabel}</p>
-            <a href="order-tracking.html?order=${encodeURIComponent(orderNumber)}&phone=${encodeURIComponent(phone)}" class="btn btn-outline-primary">
+            <a href="order-tracking.html?order=${encodeURIComponent(orderNumber)}" class="btn btn-outline-primary">
                 <i class="bi bi-truck me-2"></i>Track Your Order
             </a>
         `);

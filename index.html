@@ -96,6 +96,7 @@
     </script>
 </head>
 <body>
+    <script>if(sessionStorage.getItem('bbVisited')){document.documentElement.classList.add('bb-no-splash');}sessionStorage.setItem('bbVisited','1');</script>
     <!-- Loading Screen -->
     <div id="loading-screen">
         <div class="loading-content">
@@ -717,11 +718,11 @@
                         <div class="footer-links">
                             <h5>Services</h5>
                             <ul>
-                                <li><a href="#">Dine In</a></li>
-                                <li><a href="#">Drive Through</a></li>
-                                <li><a href="#">Delivery</a></li>
-                                <li><a href="#">Catering</a></li>
-                                <li><a href="#">Private Events</a></li>
+                                <li><a href="#contact">Dine In</a></li>
+                                <li><a href="#contact">Drive Through</a></li>
+                                <li><a href="#menu">Delivery</a></li>
+                                <li><a href="#contact">Catering</a></li>
+                                <li><a href="#contact">Private Events</a></li>
                             </ul>
                         </div>
                     </div>
@@ -750,8 +751,8 @@
                     </div>
                     <div class="col-md-6 text-md-end">
                         <div class="footer-bottom-links">
-                            <a href="#">Privacy Policy</a>
-                            <a href="#">Terms of Service</a>
+                            <a href="privacy-policy.html">Privacy Policy</a>
+                            <a href="terms.html">Terms of Service</a>
                         </div>
                     </div>
                 </div>
