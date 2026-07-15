@@ -9,136 +9,7 @@ $(document).ready(function () {
     // ==========================================
     // MENU DATA
     // ==========================================
-    const menuItems = [
-        {
-            id: 1,
-            name: "Espresso",
-            category: "hot-coffee",
-            description: "Rich, bold single shot of pure Italian-style espresso with a golden crema layer.",
-            price: 280,
-            image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&h=300&fit=crop"
-        },
-        {
-            id: 2,
-            name: "Cappuccino",
-            category: "hot-coffee",
-            description: "Perfectly balanced espresso with steamed milk and a thick layer of velvety foam.",
-            price: 380,
-            image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=300&fit=crop"
-        },
-        {
-            id: 3,
-            name: "Latte",
-            category: "hot-coffee",
-            description: "Smooth espresso combined with steamed milk and a light touch of foam art.",
-            price: 420,
-            image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop"
-        },
-        {
-            id: 4,
-            name: "Mocha",
-            category: "hot-coffee",
-            description: "Decadent blend of espresso, rich chocolate, and steamed milk topped with whipped cream.",
-            price: 480,
-            image: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?w=400&h=300&fit=crop"
-        },
-        {
-            id: 5,
-            name: "Americano",
-            category: "hot-coffee",
-            description: "Espresso diluted with hot water for a smooth, full-bodied coffee experience.",
-            price: 320,
-            image: "https://images.unsplash.com/photo-1551030173-122aabc4489c?w=400&h=300&fit=crop"
-        },
-        {
-            id: 6,
-            name: "Iced Latte",
-            category: "cold-coffee",
-            description: "Chilled espresso with cold milk poured over ice for a refreshing pick-me-up.",
-            price: 450,
-            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoukS6flmACeI7s87ROZuOkQ77Iu0BCXhVN-35AinGYA&s=10"
-        },
-        {
-            id: 7,
-            name: "Cold Brew",
-            category: "cold-coffee",
-            description: "Slow-steeped for 20 hours, delivering a smooth, naturally sweet flavor profile.",
-            price: 400,
-            image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop"
-        },
-        {
-            id: 8,
-            name: "Iced Americano",
-            category: "cold-coffee",
-            description: "Bold espresso over ice with cold water. Crisp, clean, and utterly refreshing.",
-            price: 350,
-            image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&h=300&fit=crop"
-        },
-        {
-            id: 9,
-            name: "Caramel Frappe",
-            category: "frappes",
-            description: "Blended ice, espresso, caramel sauce, and milk topped with whipped cream and drizzle.",
-            price: 550,
-            image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400&h=300&fit=crop"
-        },
-        {
-            id: 10,
-            name: "Mocha Frappe",
-            category: "frappes",
-            description: "Chocolatey blended frappe with espresso, cocoa, and milk. Pure indulgence.",
-            price: 550,
-            image: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=400&h=300&fit=crop"
-        },
-        {
-            id: 11,
-            name: "Vanilla Frappe",
-            category: "frappes",
-            description: "Creamy vanilla blended with espresso and ice. A classic favorite.",
-            price: 520,
-            image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=400&h=300&fit=crop"
-        },
-        {
-            id: 12,
-            name: "Chocolate Brownie",
-            category: "desserts",
-            description: "Fudgy, gooey chocolate brownie with a crackly top. Served warm with vanilla ice cream.",
-            price: 380,
-            image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&h=300&fit=crop"
-        },
-        {
-            id: 13,
-            name: "Cheesecake",
-            category: "desserts",
-            description: "New York style cheesecake with a graham cracker crust and berry compote.",
-            price: 450,
-            image: "https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&h=300&fit=crop"
-        },
-        {
-            id: 14,
-            name: "Tiramisu",
-            category: "desserts",
-            description: "Classic Italian dessert with espresso-soaked ladyfingers and mascarpone cream.",
-            price: 480,
-            image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop"
-        },
-        {
-            id: 15,
-            name: "Club Sandwich",
-            category: "sandwiches",
-            description: "Triple-decker with grilled chicken, crispy bacon, fresh lettuce, tomato, and mayo.",
-            price: 520,
-            image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&h=300&fit=crop"
-        },
-        {
-            id: 16,
-            name: "Chicken Panini",
-            category: "sandwiches",
-            description: "Grilled chicken with mozzarella, pesto, and sun-dried tomatoes on ciabatta.",
-            price: 480,
-            image: "https://images.unsplash.com/photo-1475090169767-40ed8d18f67d?w=400&h=300&fit=crop"
-        }
-    ];
+    let menuItems = [];
 
     // Shop coordinates (Gulshan-e-Iqbal, Karachi)
     const SHOP_LAT = 24.9180;
@@ -379,8 +250,27 @@ $(document).ready(function () {
         }
     }
 
-    // Initial render
-    renderMenu();
+    // Initial render — load from Supabase
+    async function loadMenuFromDB() {
+        const $grid = $('#menuGrid');
+        $grid.html('<div class="col-12 text-center py-5"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-muted">Loading menu...</p></div>');
+
+        const { data, error } = await supabaseClient
+            .from('menu_items')
+            .select('*')
+            .eq('is_available', true)
+            .order('id');
+
+        if (error || !data || !data.length) {
+            $grid.html('<div class="col-12 text-center py-5 text-muted">Menu unavailable. Please try again later.</div>');
+            return;
+        }
+
+        menuItems = data;
+        renderMenu();
+    }
+
+    loadMenuFromDB();
 
     // ==========================================
     // MENU FILTERS
@@ -1024,5 +914,62 @@ $(document).ready(function () {
     console.log('%c☕ Brew Beans', 'font-size: 24px; font-weight: bold; color: #0F3D2E;');
     console.log('%cPremium Artisan Coffee Shop', 'font-size: 14px; color: #2E8B57;');
     console.log('%cMade with love in Karachi, Pakistan', 'font-size: 12px; color: #6C757D;');
+
+    // ── BUSINESS HOURS BANNER ──
+    const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    function fmt12(timeStr) {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':').map(Number);
+        const period = h >= 12 ? 'PM' : 'AM';
+        const hour = h % 12 || 12;
+        return hour + (m ? ':' + String(m).padStart(2,'0') : '') + ' ' + period;
+    }
+
+    function showBanner(text, isOpen) {
+        const banner = document.getElementById('shopBanner');
+        const dot    = document.getElementById('shopBannerDot');
+        const label  = document.getElementById('shopBannerText');
+        if (!banner) return;
+        banner.style.display = 'block';
+        banner.style.background = isOpen ? 'rgba(21,128,61,0.92)' : 'rgba(185,28,28,0.92)';
+        banner.style.backdropFilter = 'blur(4px)';
+        banner.style.color = 'white';
+        dot.style.background = isOpen ? '#86efac' : '#fca5a5';
+        label.textContent = text;
+    }
+
+    (async function checkShopBanner() {
+        try {
+            const { data } = await supabaseClient.from('business_hours').select('*').order('day_of_week');
+            if (!data) return;
+            const now = new Date();
+            const day = now.getDay();
+            const todayHours = data.find(h => h.day_of_week === day);
+
+            if (!todayHours || todayHours.is_closed) {
+                const next = data.find(h => h.day_of_week === (day + 1) % 7 && !h.is_closed);
+                const txt = next ? `Closed · Opens ${DAY_NAMES[next.day_of_week]} at ${fmt12(next.open_time)}` : 'Closed Today';
+                showBanner(txt, false); return;
+            }
+
+            const [oh, om] = todayHours.open_time.split(':').map(Number);
+            const [ch, cm] = todayHours.close_time.split(':').map(Number);
+            const nowMins  = now.getHours() * 60 + now.getMinutes();
+            const openMins = oh * 60 + om;
+            let closeMins  = ch * 60 + cm;
+            if (closeMins < openMins) closeMins += 24 * 60;
+
+            if (nowMins >= openMins && nowMins < closeMins) {
+                showBanner('Open · Closes at ' + fmt12(todayHours.close_time), true);
+            } else if (nowMins < openMins) {
+                showBanner('Closed · Opens today at ' + fmt12(todayHours.open_time), false);
+            } else {
+                const next = data.find(h => h.day_of_week === (day + 1) % 7 && !h.is_closed);
+                const txt = next ? `Closed · Opens ${DAY_NAMES[next.day_of_week]} at ${fmt12(next.open_time)}` : 'Closed';
+                showBanner(txt, false);
+            }
+        } catch (e) {}
+    })();
 
 }); // End document ready

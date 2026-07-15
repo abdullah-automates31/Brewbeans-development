@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Brew Beans</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --primary: #0F3D2E;
+      --primary-dark: #0A2E22;
+      --primary-light: #1A5C45;
+      --secondary: #2E8B57;
+      --secondary-light: #3DAF6E;
+      --accent: #FFFFFF;
+      --text-dark: #1A1A1A;
+      --text-medium: #4A4A4A;
+      --text-light: #6C757D;
+      --border: #E5E7EB;
+      --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+      --radius: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-primary: 'Poppins', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-primary);
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+      top: -200px;
+      right: -200px;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 50%;
+      bottom: -150px;
+      left: -150px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    .login-header img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      margin-bottom: 1rem;
+      filter: brightness(0) invert(1);
+    }
+
+    .login-header h1 {
+      font-family: var(--font-display);
+      color: white;
+      font-size: 1.6rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .login-header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+    }
+
+    .login-body {
+      padding: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 0.5rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font-primary);
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      transition: var(--transition);
+      outline: none;
+      background: #FAFAFA;
+    }
+
+    .form-control:focus {
+      border-color: var(--secondary);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(46,139,87,0.1);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      padding: 0;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .toggle-password:hover { color: var(--secondary); }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-primary);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(46,139,87,0.35);
+    }
+
+    .btn-login:active { transform: translateY(0); }
+
+    .btn-login:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-login .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .btn-login.loading .spinner { display: block; }
+    .btn-login.loading .btn-text { display: none; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .alert-error {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: #DC2626;
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .alert-error.show { display: flex; }
+
+    .login-footer {
+      text-align: center;
+      padding: 1rem 2rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .login-footer a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: var(--transition);
+    }
+
+    .login-footer a:hover { color: var(--primary); }
+
+    .badge-admin {
+      display: inline-block;
+      background: rgba(46,139,87,0.1);
+      color: var(--secondary);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-header">
+      <img src="img/brewbeans-logo.png" alt="Brew Beans" onerror="this.style.display='none'">
+      <span class="badge-admin" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);">Admin Portal</span>
+      <h1>Brew Beans</h1>
+      <p>Sign in to manage your coffee shop</p>
+    </div>
+
+    <div class="login-body">
+      <div class="alert-error" id="errorAlert">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span id="errorMsg">Invalid email or password.</span>
+      </div>
+
+      <form id="loginForm" autocomplete="on">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrapper">
+            <i class="bi bi-envelope"></i>
+            <input type="email" id="email" class="form-control" placeholder="admin@brewbeans.pk" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <i class="bi bi-lock"></i>
+            <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+            <button type="button" class="toggle-password" id="togglePassword">
+              <i class="bi bi-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <div class="spinner"></div>
+          <span class="btn-text">
+            <i class="bi bi-shield-lock"></i> Sign In
+          </span>
+        </button>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      <a href="index.html">
+        <i class="bi bi-arrow-left"></i> Back to Website
+      </a>
+    </div>
+  </div>
+
+  <script src="js/supabase-config.js"></script>
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMsg = document.getElementById('errorMsg');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    // Check if already logged in
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.href = 'admin-dashboard.html';
+    });
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      eyeIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+
+    // Login form submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // Show loading
+      loginBtn.classList.add('loading');
+      loginBtn.disabled = true;
+      errorAlert.classList.remove('show');
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        errorMsg.textContent = error.message === 'Invalid login credentials'
+          ? 'Invalid email or password. Please try again.'
+          : error.message;
+        errorAlert.classList.add('show');
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+      } else {
+        window.location.href = 'admin-dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>
