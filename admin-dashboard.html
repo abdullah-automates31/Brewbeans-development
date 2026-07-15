@@ -2417,7 +2417,7 @@
     // Fetch month orders + last 7 days orders in parallel
     const [{ data: monthOrders }, { data: allItems }] = await Promise.all([
       supabaseClient.from('orders').select('id, total, status, created_at').gte('created_at', monthStart),
-      supabaseClient.from('order_items').select('quantity, menu_item_id, menu_items(name)')
+      supabaseClient.from('order_items').select('quantity, menu_item_name')
     ]);
 
     const orders = monthOrders || [];
@@ -2464,7 +2464,7 @@
     // Top items
     const itemTotals = {};
     items.forEach(i => {
-      const name = i.menu_items?.name || 'Unknown';
+      const name = i.menu_item_name || 'Unknown';
       itemTotals[name] = (itemTotals[name] || 0) + (i.quantity || 1);
     });
     const topSorted = Object.entries(itemTotals).sort((a,b) => b[1]-a[1]).slice(0, 5);
