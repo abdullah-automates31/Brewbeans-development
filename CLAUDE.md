@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Brew Beans is a static coffee shop website with a Supabase backend. There is no build step — open `index.html` directly in a browser or use a local server (`npx serve .` or VS Code Live Server). For accurate CSP behavior during development, use an HTTP server rather than `file://`. Deployment target is **Netlify** (security headers are configured in `_headers`).
+Brew Beans is a static coffee shop website with a Supabase backend. There is no build step — open `index.html` directly in a browser or use a local server (`npx serve .` or VS Code Live Server). For accurate CSP behavior during development, use an HTTP server rather than `file://`. Deployment target is **Vercel** (security headers are configured in `vercel.json` at the repo root). The `_headers` file is a legacy Netlify artifact — keep `vercel.json` in sync with it if either changes.
 
 ## Architecture
 
@@ -48,7 +48,7 @@ All styles are in `css/style.css`. Design tokens are CSS custom properties defin
 
 ## Security Headers
 
-`_headers` configures Netlify's response headers including a strict CSP that whitelists specific CDN origins and inline script hashes. **When adding new external scripts or inline `<script>` blocks**, update the CSP in `_headers` accordingly — otherwise they will be blocked in production. All user-generated content rendered into the DOM uses `escapeHtml()` or `innerText` assignment to prevent XSS.
+`vercel.json` at the repo root configures response headers including a strict CSP that whitelists specific CDN origins and inline script hashes. **When adding new external scripts or inline `<script>` blocks**, update the CSP in `vercel.json` accordingly — otherwise they will be blocked in production. All user-generated content rendered into the DOM uses `escapeHtml()` or `innerText` assignment to prevent XSS.
 
 ## External Dependencies (CDN)
 
@@ -61,4 +61,4 @@ All loaded via CDN, no local `node_modules`:
 
 ## Payment Gateways
 
-JazzCash and EasyPaisa are integrated via form redirects to their payment pages. Both domains are whitelisted in the CSP `form-action` directive in `_headers`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.
+JazzCash and EasyPaisa are integrated via form redirects to their payment pages. Both domains are whitelisted in the CSP `form-action` directive in `vercel.json`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.
