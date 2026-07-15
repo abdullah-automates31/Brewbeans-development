@@ -609,6 +609,7 @@ $(document).ready(function () {
     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
     const addonModal = new bootstrap.Modal(document.getElementById('addonModal'));
     let checkoutLatLng = null;
+    let checkoutDeliveryCharge = 100;
 
     $('#checkoutBtn').on('click', function () {
         if (cart.length === 0) {
@@ -657,6 +658,7 @@ $(document).ready(function () {
         });
 
         const deliveryCharge = subtotal > 1000 ? 0 : 100;
+        checkoutDeliveryCharge = deliveryCharge;
         const total = subtotal + deliveryCharge;
 
         $('#checkoutSubtotal').text(`Rs. ${subtotal}`);
@@ -699,6 +701,7 @@ $(document).ready(function () {
         // Update checkout delivery
         const subtotal = cart.reduce((sum, item) => sum + ((item.price + (item.addonPrice || 0)) * item.quantity), 0);
         const finalDelivery = subtotal > 1000 ? 0 : deliveryCost;
+        checkoutDeliveryCharge = finalDelivery;
         $('#checkoutDelivery').text(finalDelivery === 0 ? 'FREE' : `Rs. ${finalDelivery}`);
         $('#checkoutTotal').text(`Rs. ${subtotal + finalDelivery}`);
     }
@@ -739,7 +742,13 @@ $(document).ready(function () {
         $btn.prop('disabled', true);
 
         try {
-            const items = cart.map(item => ({ menu_item_id: item.id, quantity: item.quantity }));
+            const items = cart.map(item => ({
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                addons: item.selectedAddons && item.selectedAddons.length
+                    ? item.selectedAddons.map(a => ({ name: a.name, price: a.price }))
+                    : null
+            }));
 
             // Append addon selections to notes so staff always see them
             const addonSummary = cart
@@ -757,7 +766,8 @@ $(document).ready(function () {
                 p_lng: checkoutLatLng ? checkoutLatLng.lng : null,
                 p_notes: fullNotes || null,
                 p_payment_method: paymentMethod,
-                p_items: items
+                p_items: items,
+                p_delivery_charge: checkoutDeliveryCharge
             });
 
             if (error) throw error;

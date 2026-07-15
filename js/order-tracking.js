@@ -122,7 +122,7 @@ async function trackOrder(orderNumber, phone, silent) {
         $items.append(`
             <div class="d-flex justify-content-between">
                 <span>${item.quantity}x ${escapeHtml(item.name)}</span>
-                <span>Rs. ${item.price * item.quantity}</span>
+                <span>Rs. ${item.total_price ?? (item.unit_price ?? 0) * item.quantity}</span>
             </div>
         `);
     });
