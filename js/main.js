@@ -1118,9 +1118,8 @@ $(document).ready(function () {
         const label  = document.getElementById('shopBannerText');
         if (!banner) return;
         banner.style.display = '';
-        inner.style.background = isOpen ? 'rgba(21,128,61,0.85)' : 'rgba(185,28,28,0.85)';
-        inner.style.backdropFilter = 'blur(4px)';
-        inner.style.color = 'white';
+        inner.style.background = isOpen ? 'rgba(134,239,172,0.15)' : 'rgba(252,165,165,0.15)';
+        inner.style.borderColor = isOpen ? 'rgba(134,239,172,0.5)' : 'rgba(252,165,165,0.5)';
         dot.style.background = isOpen ? '#86efac' : '#fca5a5';
         label.textContent = text;
     }
