@@ -10,7 +10,7 @@ $(document).ready(function () {
     // MENU DATA
     // ==========================================
     let menuItems = [];
-    const POPULAR_ITEMS = ['Spanish Latte', 'Cappuccino', 'Espresso', 'Donuts'];
+    const POPULAR_ITEMS = [];
     const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
     const FOOD_CATS     = ['desserts', 'sandwiches'];
 
@@ -234,7 +234,7 @@ $(document).ready(function () {
                         <div class="menu-item-img">
                             <img src="${item.image}" alt="${item.name}" loading="lazy">
                             <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
-                            ${POPULAR_ITEMS.includes(item.name) ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
+                            ${item.is_popular ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
                         </div>
                         <div class="menu-item-content">
                             <h3 class="menu-item-name">${item.name}</h3>
@@ -268,7 +268,7 @@ $(document).ready(function () {
     function renderFanFavorites() {
         const $section = $('#fanFavorites');
         if (!$section.length) return;
-        const featured = menuItems.filter(item => POPULAR_ITEMS.includes(item.name));
+        const featured = menuItems.filter(item => item.is_popular);
         if (!featured.length) { $section.hide(); return; }
         const html = featured.map(item => `
             <div class="fav-card" data-aos="fade-up">

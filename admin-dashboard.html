@@ -1021,6 +1021,7 @@
 
     .btn-icon:hover { border-color: var(--secondary); color: var(--secondary); }
     .btn-icon.danger:hover { border-color: #EF4444; color: #EF4444; }
+    .btn-icon.popular-active { border-color: #d97706; color: #d97706; background: #fffbeb; }
 
     .toggle {
       position: relative;
@@ -2569,6 +2570,7 @@
                 <input type="checkbox" ${item.is_available ? 'checked' : ''} onchange="toggleAvailable(${item.id}, this.checked)">
                 <span class="toggle-slider"></span>
               </label>
+              <button class="btn-icon ${item.is_popular ? 'popular-active' : ''}" onclick="togglePopular(${item.id}, ${!item.is_popular})" title="${item.is_popular ? 'Remove from Popular' : 'Mark as Popular'}"><i class="bi bi-star${item.is_popular ? '-fill' : ''}"></i></button>
               <button class="btn-icon" onclick="openAssignModal(${item.id}, '${escHtml(item.name)}')" title="Add-ons"><i class="bi bi-tags"></i></button>
               <button class="btn-icon" onclick="openMenuModal(${item.id})" title="Edit"><i class="bi bi-pencil"></i></button>
               <button class="btn-icon danger" onclick="confirmDeleteMenuItem(${item.id}, '${escHtml(item.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
@@ -2647,6 +2649,15 @@
     const { error } = await supabaseClient.from('menu_items').update({ is_available: val }).eq('id', id);
     if (error) { showToast('Failed to update', 'error'); await loadMenu(); return; }
     showToast(val ? 'Item marked available' : 'Item marked unavailable', 'success');
+  }
+
+  async function togglePopular(id, val) {
+    const { error } = await supabaseClient.from('menu_items').update({ is_popular: val }).eq('id', id);
+    if (error) { showToast('Failed to update', 'error'); await loadMenu(); return; }
+    const item = allMenuItems.find(i => i.id === id);
+    if (item) item.is_popular = val;
+    renderMenuGrid();
+    showToast(val ? '⭐ Marked as Popular' : 'Removed from Popular', 'success');
   }
 
   function confirmDeleteMenuItem(id, name) {
