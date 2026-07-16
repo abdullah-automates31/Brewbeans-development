@@ -175,8 +175,10 @@
                 <i class="bi bi-bag-x"></i>
                 <p>Your cart is empty</p>
                 <span class="text-muted">Add some delicious items!</span>
+                <button class="btn-browse-menu" id="browseMenuBtn">Browse Menu</button>
             </div>
             <div class="cart-items" id="cartItems"></div>
+            <div id="upsellSection"></div>
         </div>
         <div class="cart-footer" id="cartFooter" style="display: none;">
             <div class="cart-summary">
@@ -355,6 +357,18 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Fan Favorites Section -->
+    <section id="fanFavorites" class="section-padding" style="display:none; background:linear-gradient(135deg, #f9f5f0 0%, #fff8f0 100%);">
+        <div class="container">
+            <div class="section-header text-center" data-aos="fade-up">
+                <span class="section-label">Most Loved</span>
+                <h2 class="section-title">Fan Favorites</h2>
+                <p class="section-subtitle">The ones our customers can't get enough of</p>
+            </div>
+            <div class="fav-grid" id="fanFavGrid"></div>
         </div>
     </section>
 

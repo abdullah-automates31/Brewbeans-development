@@ -10,6 +10,9 @@ $(document).ready(function () {
     // MENU DATA
     // ==========================================
     let menuItems = [];
+    const POPULAR_ITEMS = ['Spanish Latte', 'Cappuccino', 'Espresso', 'Donuts'];
+    const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
+    const FOOD_CATS     = ['desserts', 'sandwiches'];
 
     // Shop coordinates (Gulshan-e-Iqbal, Karachi)
     const SHOP_LAT = 24.9180;
@@ -231,6 +234,7 @@ $(document).ready(function () {
                         <div class="menu-item-img">
                             <img src="${item.image}" alt="${item.name}" loading="lazy">
                             <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
+                            ${POPULAR_ITEMS.includes(item.name) ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
                         </div>
                         <div class="menu-item-content">
                             <h3 class="menu-item-name">${item.name}</h3>
@@ -261,6 +265,81 @@ $(document).ready(function () {
         }
     }
 
+    function renderFanFavorites() {
+        const $section = $('#fanFavorites');
+        if (!$section.length) return;
+        const featured = menuItems.filter(item => POPULAR_ITEMS.includes(item.name));
+        if (!featured.length) { $section.hide(); return; }
+        const html = featured.map(item => `
+            <div class="fav-card" data-aos="fade-up">
+                <div class="fav-card-img">
+                    <img src="${item.image}" alt="${item.name}" loading="lazy">
+                    <span class="fav-tag">⭐ Fan Favorite</span>
+                </div>
+                <div class="fav-card-body">
+                    <h4 class="fav-card-name">${item.name}</h4>
+                    <p class="fav-card-desc">${item.description}</p>
+                    <div class="fav-card-footer">
+                        <span class="fav-card-price">Rs. ${item.price}</span>
+                        <button class="btn-fav-order btn-add-cart" data-id="${item.id}">
+                            <i class="bi bi-plus-lg"></i> Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        $('#fanFavGrid').html(html);
+        $section.show();
+        if (window.innerWidth >= 768 && typeof AOS !== 'undefined') AOS.refreshHard();
+    }
+
+    function renderUpsell() {
+        const $section = $('#upsellSection');
+        if (!$section.length || !menuItems.length || cart.length === 0) {
+            if ($section.length) $section.empty();
+            return;
+        }
+        const inCartIds = new Set(cart.map(i => i.id));
+        const cartCats = new Set(cart.map(i => {
+            const found = menuItems.find(m => m.id === i.id);
+            return found ? found.category : null;
+        }).filter(Boolean));
+        const hasCoffee = [...cartCats].some(c => COFFEE_CATS.includes(c));
+        const hasFood   = [...cartCats].some(c => FOOD_CATS.includes(c));
+        let suggestions = [];
+        if (hasCoffee && !hasFood) {
+            suggestions = menuItems.filter(m => FOOD_CATS.includes(m.category) && !inCartIds.has(m.id))
+                .sort(() => Math.random() - 0.5).slice(0, 2);
+        } else if (hasFood && !hasCoffee) {
+            suggestions = menuItems.filter(m => COFFEE_CATS.includes(m.category) && !inCartIds.has(m.id))
+                .sort(() => Math.random() - 0.5).slice(0, 2);
+        } else {
+            const rnd = arr => arr.length ? arr[Math.floor(Math.random() * arr.length)] : null;
+            suggestions = [
+                rnd(menuItems.filter(m => FOOD_CATS.includes(m.category) && !inCartIds.has(m.id))),
+                rnd(menuItems.filter(m => COFFEE_CATS.includes(m.category) && !inCartIds.has(m.id)))
+            ].filter(Boolean);
+        }
+        if (!suggestions.length) { $section.empty(); return; }
+        $section.html(`
+            <div class="upsell-header">Also try...</div>
+            <div class="upsell-cards">
+                ${suggestions.map(item => `
+                    <div class="upsell-card">
+                        <img src="${item.image}" alt="${item.name}" class="upsell-img">
+                        <div class="upsell-info">
+                            <div class="upsell-name">${item.name}</div>
+                            <div class="upsell-price">Rs. ${item.price}</div>
+                        </div>
+                        <button class="upsell-add btn-add-cart" data-id="${item.id}" title="Add to cart">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `);
+    }
+
     // Initial render — load from Supabase
     async function loadMenuFromDB() {
         const $grid = $('#menuGrid');
@@ -279,6 +358,7 @@ $(document).ready(function () {
 
         menuItems = data;
         renderMenu();
+        renderFanFavorites();
     }
 
     loadMenuFromDB();
@@ -334,6 +414,7 @@ $(document).ready(function () {
             $items.hide();
             $empty.show();
             $footer.hide();
+            $('#upsellSection').empty();
             return;
         }
 
@@ -377,6 +458,7 @@ $(document).ready(function () {
         $('#subtotal').text(`Rs. ${subtotal}`);
         $('#deliveryCharge').text(deliveryCharge === 0 ? 'FREE' : `Rs. ${deliveryCharge}`);
         $('#grandTotal').text(`Rs. ${grandTotal}`);
+        renderUpsell();
     }
 
     // ==========================================
@@ -600,6 +682,13 @@ $(document).ready(function () {
         $('#cartSidebar').removeClass('open');
         $('#cartOverlay').removeClass('show');
         $('body').css('overflow', '');
+    });
+
+    $('#browseMenuBtn').on('click', function () {
+        $('#cartSidebar').removeClass('open');
+        $('#cartOverlay').removeClass('show');
+        $('body').css('overflow', '');
+        $('html, body').animate({ scrollTop: $('#menu').offset().top - 80 }, 600);
     });
 
     // ==========================================
