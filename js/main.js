@@ -10,7 +10,7 @@ $(document).ready(function () {
     // MENU DATA
     // ==========================================
     let menuItems = [];
-    const POPULAR_ITEMS = [];
+    const POPULAR_ITEMS = ['Royal Beans Spanish Latte', 'Lotus Frappe', 'Caramel Rush Brew', 'Chocolate Chip Cookies'];
     const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
     const FOOD_CATS     = ['desserts', 'sandwiches'];
 
@@ -89,6 +89,7 @@ $(document).ready(function () {
     }, 3000);
 
     $('#allowLocation').on('click', function () {
+        locationModal.hide();
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 function (position) {
@@ -98,19 +99,15 @@ $(document).ready(function () {
                         timestamp: new Date().toISOString()
                     };
                     safeWriteLocalStorage('brewBeansLocation', userLocation);
-                    locationModal.hide();
                     showToast('Location saved successfully!');
                 },
-                function (error) {
-                    console.error('Location error:', error);
+                function () {
                     showToast('Could not access location. Please enter manually.', 'warning');
-                    locationModal.hide();
                 },
                 { enableHighAccuracy: true, timeout: 10000 }
             );
         } else {
             showToast('Geolocation is not supported by your browser.', 'warning');
-            locationModal.hide();
         }
     });
 
@@ -221,9 +218,16 @@ $(document).ready(function () {
         const $grid = $('#menuGrid');
         $grid.empty();
 
-        const filteredItems = filter === 'all'
-            ? menuItems
-            : menuItems.filter(item => item.category === filter);
+        const q = ($('#menuSearchBar').val() || '').toLowerCase().trim();
+        let filteredItems = filter === 'all' ? menuItems : menuItems.filter(item => item.category === filter);
+        if (q) filteredItems = filteredItems.filter(item =>
+            item.name.toLowerCase().includes(q) || (item.description || '').toLowerCase().includes(q)
+        );
+
+        if (!filteredItems.length) {
+            $grid.html('<div class="col-12 text-center py-5 text-muted"><i class="bi bi-search" style="font-size:2rem"></i><p class="mt-3">No items found for "<strong>' + $('<span>').text(q).html() + '</strong>"</p></div>');
+            return;
+        }
 
         filteredItems.forEach((item, index) => {
             const aosDirection = index % 2 === 0 ? 'fade-right' : 'fade-left';
@@ -366,6 +370,11 @@ $(document).ready(function () {
     // ==========================================
     // MENU FILTERS
     // ==========================================
+    $('#menuSearchBar').on('input', function () {
+        const activeFilter = $('.filter-btn.active').data('filter') || 'all';
+        renderMenu(activeFilter);
+    });
+
     $('.filter-btn').on('click', function () {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
@@ -865,6 +874,8 @@ $(document).ready(function () {
             const orderNumber = order.order_number;
             const total = order.total;
 
+            saveCustomerProfile(phone, fullName, email, address, paymentMethod, [...cart]);
+            safeWriteLocalStorage('brewBeansLastOrder', { orderNumber, phone });
 
             if (paymentMethod === 'cod') {
                 completeOrderSuccess(orderNumber, total, phone, order.delivery_charge);
@@ -916,6 +927,7 @@ $(document).ready(function () {
 
 
     function completeOrderSuccess(orderNumber, total, phone, deliveryCharge) {
+        document.getElementById('trackOrderNavItem').style.display = '';
         checkoutModal.hide();
 
         const prepMin = 15;
@@ -955,8 +967,233 @@ $(document).ready(function () {
     $('#checkoutModal').on('hidden.bs.modal', function () {
         $('#checkoutForm')[0].reset();
         $('#deliveryEstimate').hide();
+        $('#returningCustomerBanner').hide().empty();
         $('#placeOrderBtn').html('<i class="bi bi-check-circle me-2"></i>Place Order');
         $('#placeOrderBtn').prop('disabled', false);
+    });
+
+    // ==========================================
+    // RETURNING CUSTOMER RECOGNITION
+    // ==========================================
+
+    function saveCustomerProfile(phone, name, email, address, paymentMethod, cartSnapshot) {
+        const freq = {};
+        cartSnapshot.forEach(item => {
+            if (!freq[item.id]) freq[item.id] = { id: item.id, name: item.name, image: item.image || '', count: 0 };
+            freq[item.id].count += item.quantity;
+        });
+        safeWriteLocalStorage('brewBeansLastCustomer', {
+            phone,
+            name,
+            email: email || '',
+            address: address || '',
+            lastPaymentMethod: paymentMethod,
+            lastItems: Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 6),
+            savedAt: new Date().toISOString()
+        });
+    }
+
+    async function checkReturningCustomer(phone) {
+        const normalized = phone.replace(/[\s\-()]/g, '');
+        const cached = safeReadLocalStorage('brewBeansLastCustomer');
+        if (cached && cached.phone.replace(/[\s\-()]/g, '') === normalized) return cached;
+
+        try {
+            const { data: orders } = await supabaseClient
+                .from('orders')
+                .select('id, customer_name, email, payment_method')
+                .eq('phone', phone)
+                .order('created_at', { ascending: false })
+                .limit(5);
+            if (!orders || !orders.length) return null;
+
+            const orderIds = orders.map(o => o.id);
+            const { data: items } = await supabaseClient
+                .from('order_items')
+                .select('menu_item_id, menu_item_name, quantity')
+                .in('order_id', orderIds);
+
+            const freq = {};
+            (items || []).forEach(i => {
+                if (!freq[i.menu_item_id]) freq[i.menu_item_id] = { id: i.menu_item_id, name: i.menu_item_name, image: '', count: 0 };
+                freq[i.menu_item_id].count += i.quantity;
+            });
+            Object.values(freq).forEach(fi => {
+                const m = menuItems.find(x => x.id === fi.id);
+                if (m) fi.image = m.image || '';
+            });
+
+            const last = orders[0];
+            return {
+                phone, name: last.customer_name, email: last.email || '',
+                lastPaymentMethod: last.payment_method,
+                lastItems: Object.values(freq).sort((a, b) => b.count - a.count).slice(0, 6),
+                savedAt: new Date().toISOString()
+            };
+        } catch (e) { return null; }
+    }
+
+    function showReturningCustomerBanner(customer) {
+        const banner = document.getElementById('returningCustomerBanner');
+        if (!banner) return;
+
+        if (customer.name && !$('#fullName').val()) $('#fullName').val(customer.name);
+        if (customer.email && !$('#email').val()) $('#email').val(customer.email);
+        if (customer.address && !$('#address').val()) $('#address').val(customer.address);
+        if (customer.lastPaymentMethod) {
+            $(`input[name="paymentMethod"][value="${customer.lastPaymentMethod}"]`).prop('checked', true);
+        }
+
+        const cartIds = new Set(cart.map(c => c.id));
+        const suggestions = (customer.lastItems || [])
+            .filter(item => menuItems.find(m => m.id === item.id) && !cartIds.has(item.id))
+            .slice(0, 2);
+
+        if (!suggestions.length) { banner.style.display = 'none'; return; }
+
+        const firstName = (customer.name || '').split(' ')[0] || 'there';
+
+        banner.innerHTML = '';
+        banner.style.display = 'block';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'rc-banner';
+
+        const hdr = document.createElement('div');
+        hdr.className = 'rc-header';
+        hdr.innerHTML = '<i class="bi bi-person-check-fill"></i>';
+        const hdrText = document.createElement('span');
+        hdrText.appendChild(document.createTextNode('Welcome back, '));
+        const strong = document.createElement('strong');
+        strong.textContent = firstName;
+        hdrText.appendChild(strong);
+        hdrText.appendChild(document.createTextNode('! 👋'));
+        hdr.appendChild(hdrText);
+        wrap.appendChild(hdr);
+
+        const sub = document.createElement('p');
+        sub.className = 'rc-subtitle';
+        sub.textContent = 'Because you loved these last time — add to your order:';
+        wrap.appendChild(sub);
+
+        const sugEl = document.createElement('div');
+        sugEl.className = 'rc-suggestions';
+
+        suggestions.forEach(item => {
+            const menuItem = menuItems.find(m => m.id === item.id);
+            if (!menuItem) return;
+
+            const row = document.createElement('div');
+            row.className = 'rc-suggestion-item';
+
+            if (menuItem.image) {
+                const img = document.createElement('img');
+                img.src = menuItem.image;
+                img.alt = menuItem.name;
+                img.className = 'rc-item-img';
+                img.addEventListener('error', () => { img.style.display = 'none'; });
+                row.appendChild(img);
+            }
+
+            const info = document.createElement('div');
+            info.className = 'rc-item-info';
+            const nameEl = document.createElement('div');
+            nameEl.className = 'rc-item-name';
+            nameEl.textContent = menuItem.name;
+            const reason = document.createElement('div');
+            reason.className = 'rc-item-reason';
+            reason.textContent = 'Because last time you tried this ✓';
+            info.appendChild(nameEl);
+            info.appendChild(reason);
+            row.appendChild(info);
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'rc-add-btn';
+            addBtn.innerHTML = '<i class="bi bi-plus"></i> Add';
+            addBtn.addEventListener('click', () => {
+                addDirectToCart(menuItem, null);
+                renderCheckoutSummary();
+                showReturningCustomerBanner(customer);
+            });
+            row.appendChild(addBtn);
+            sugEl.appendChild(row);
+        });
+
+        wrap.appendChild(sugEl);
+        banner.appendChild(wrap);
+    }
+
+    function rcDebounce(fn, ms) {
+        let t; return function(...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); };
+    }
+
+    $('#checkoutModal').on('shown.bs.modal', function () {
+        const cached = safeReadLocalStorage('brewBeansLastCustomer');
+        if (cached) {
+            showReturningCustomerBanner(cached);
+            if (!$('#phoneNumber').val()) $('#phoneNumber').val(cached.phone);
+        } else {
+            $('#returningCustomerBanner').hide().empty();
+        }
+
+        const debouncedLookup = rcDebounce(async function () {
+            const phone = $('#phoneNumber').val().trim();
+            if (phone.length >= 10) {
+                const customer = await checkReturningCustomer(phone);
+                if (customer) showReturningCustomerBanner(customer);
+                else { document.getElementById('returningCustomerBanner').style.display = 'none'; }
+            }
+        }, 700);
+
+        $('#phoneNumber').off('input.rc').on('input.rc', debouncedLookup);
+    });
+
+    // ==========================================
+    // TRACK ORDER
+    // ==========================================
+
+    const trackOrderModal = new bootstrap.Modal(document.getElementById('trackOrderModal'));
+
+    // Show Track Order button only if customer has a previous order
+    if (safeReadLocalStorage('brewBeansLastOrder')) {
+        document.getElementById('trackOrderNavItem').style.display = '';
+    }
+
+    $('#trackOrderNavBtn').on('click', function () {
+        // Pre-fill from last order if saved
+        const last = safeReadLocalStorage('brewBeansLastOrder');
+        if (last) {
+            $('#trackOrderNumber').val(last.orderNumber || '');
+            $('#trackPhone').val(last.phone || '');
+        } else {
+            $('#trackOrderNumber').val('');
+            $('#trackPhone').val('');
+        }
+        $('#trackError').hide();
+        trackOrderModal.show();
+    });
+
+    $('#trackSubmitBtn').on('click', function () {
+        const orderNumber = $('#trackOrderNumber').val().trim();
+        const phone = $('#trackPhone').val().trim();
+        const errEl = document.getElementById('trackError');
+
+        if (!orderNumber || !phone) {
+            errEl.textContent = 'Please enter both order number and phone number.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        errEl.style.display = 'none';
+        safeWriteLocalStorage('brewBeansLastOrder', { orderNumber, phone });
+        try { sessionStorage.setItem(`bb_phone_${orderNumber}`, phone); } catch(e) {}
+        trackOrderModal.hide();
+        window.location.href = `order-tracking.html?order=${encodeURIComponent(orderNumber)}`;
+    });
+
+    // Allow Enter key in track modal inputs
+    $('#trackOrderModal').on('keydown', function (e) {
+        if (e.key === 'Enter') $('#trackSubmitBtn').trigger('click');
     });
 
     // ==========================================

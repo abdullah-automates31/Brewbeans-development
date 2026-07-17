@@ -892,9 +892,52 @@
     .menu-page-header {
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 1.25rem;
+      flex-wrap: wrap;
     }
+    .menu-search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.45rem 1rem;
+      flex: 1;
+      max-width: 360px;
+      transition: border-color 0.2s;
+    }
+    .menu-search-wrap:focus-within { border-color: var(--secondary); }
+    .menu-search-icon { color: var(--text-muted); font-size: 0.9rem; }
+    .menu-search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--font-primary);
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      width: 100%;
+    }
+    .menu-search-input::placeholder { color: var(--text-muted); }
+
+    .btn-add {
+      padding: 0.5rem 1.1rem;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-add:hover { background: var(--primary); }
 
     .btn-primary {
       padding: 0.55rem 1.1rem;
@@ -1222,6 +1265,7 @@
 </head>
 <body>
 
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -1237,23 +1281,23 @@
 
   <nav class="sidebar-nav">
     <div class="nav-section-title">Main</div>
-    <button class="nav-item active" onclick="showPage('orders')">
+    <button class="nav-item active" data-page="orders">
       <i class="bi bi-receipt"></i> Orders
       <span class="nav-badge" id="newOrdersBadge">0</span>
     </button>
-    <button class="nav-item" onclick="showPage('menu')">
+    <button class="nav-item" data-page="menu">
       <i class="bi bi-cup-hot"></i> Menu
     </button>
-    <button class="nav-item" onclick="showPage('hours')">
+    <button class="nav-item" data-page="hours">
       <i class="bi bi-clock"></i> Business Hours
     </button>
-    <button class="nav-item" onclick="showPage('addons')">
+    <button class="nav-item" data-page="addons">
       <i class="bi bi-tags"></i> Add-ons
     </button>
-    <button class="nav-item" onclick="showPage('staff')">
+    <button class="nav-item" data-page="staff">
       <i class="bi bi-people"></i> Staff PINs
     </button>
-    <button class="nav-item" onclick="showPage('analytics')">
+    <button class="nav-item" data-page="analytics">
       <i class="bi bi-bar-chart-line"></i> Analytics
     </button>
 
@@ -1274,7 +1318,7 @@
         <p id="userEmail">Loading...</p>
       </div>
     </div>
-    <button class="btn-logout" onclick="logout()">
+    <button class="btn-logout">
       <i class="bi bi-box-arrow-left"></i> Sign Out
     </button>
   </div>
@@ -1332,10 +1376,10 @@
 
       <div class="card">
         <div class="orders-filters">
-          <button class="filter-btn active" onclick="filterOrders('active', this)">Active</button>
-          <button class="filter-btn" onclick="filterOrders('all', this)">All Orders</button>
-          <button class="filter-btn" onclick="filterOrders('delivered', this)">Delivered</button>
-          <button class="filter-btn" onclick="filterOrders('cancelled', this)">Cancelled</button>
+          <button class="filter-btn active" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="all">All Orders</button>
+          <button class="filter-btn" data-filter="delivered">Delivered</button>
+          <button class="filter-btn" data-filter="cancelled">Cancelled</button>
         </div>
         <div class="search-wrapper">
           <div class="search-input-wrap">
@@ -1355,7 +1399,11 @@
     <!-- MENU PAGE -->
     <div class="page" id="page-menu">
       <div class="menu-page-header">
-        <button class="btn-primary" onclick="openMenuModal()">
+        <div class="menu-search-wrap">
+          <i class="bi bi-search menu-search-icon"></i>
+          <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Search menu items...">
+        </div>
+        <button class="btn-primary">
           <i class="bi bi-plus-lg"></i> Add Item
         </button>
       </div>
@@ -1372,7 +1420,7 @@
       <div class="card">
         <div class="card-header">
           <h3>Business Hours</h3>
-          <button class="btn-save-hours" id="saveHoursBtn" onclick="saveHours()">Save Changes</button>
+          <button class="btn-save-hours" id="saveHoursBtn">Save Changes</button>
         </div>
         <div id="hoursContainer">
           <div class="loading-spinner"><div class="spinner-ring"></div><p>Loading hours...</p></div>
@@ -1383,7 +1431,7 @@
     <!-- ADDONS PAGE -->
     <div class="page" id="page-addons">
       <div class="menu-page-header">
-        <button class="btn-primary" onclick="openGroupModal()">
+        <button class="btn-primary">
           <i class="bi bi-plus-lg"></i> Add Group
         </button>
       </div>
@@ -1397,7 +1445,7 @@
       <div class="card">
         <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
           <h3>Staff PINs</h3>
-          <button class="btn-add" onclick="openStaffModal()"><i class="bi bi-plus-lg"></i> Add Staff</button>
+          <button class="btn-add"><i class="bi bi-plus-lg"></i> Add Staff</button>
         </div>
         <div class="card-body" style="padding:0">
           <div id="staffList"><div class="loading-spinner"><div class="spinner-ring"></div><p>Loading...</p></div></div>
@@ -1406,11 +1454,11 @@
     </div>
 
     <!-- Add/Edit Staff Modal -->
-    <div class="modal-overlay" id="staffModal" onclick="closeStaffModal(event)">
+    <div class="modal-overlay" id="staffModal">
       <div class="modal" style="max-width:420px">
         <div class="modal-header">
           <h3 id="staffModalTitle">Add Staff</h3>
-          <button class="modal-close" onclick="closeStaffModalDirect()"><i class="bi bi-x-lg"></i></button>
+          <button class="modal-close"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -1423,8 +1471,8 @@
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn-modal close" onclick="closeStaffModalDirect()">Cancel</button>
-          <button class="btn-modal next" id="staffSaveBtn" onclick="saveStaff()">Save</button>
+          <button class="btn-modal close">Cancel</button>
+          <button class="btn-modal next" id="staffSaveBtn">Save</button>
         </div>
       </div>
     </div>
@@ -1496,18 +1544,18 @@
     <h3>Cancel Order?</h3>
     <p id="confirmMsg">Are you sure you want to cancel this order?</p>
     <div class="confirm-btns">
-      <button class="btn-confirm-no" onclick="closeConfirm()">No, Keep It</button>
+      <button class="btn-confirm-no">No, Keep It</button>
       <button class="btn-confirm-yes" id="confirmYesBtn">Yes, Cancel</button>
     </div>
   </div>
 </div>
 
 <!-- ORDER DETAIL MODAL -->
-<div class="modal-overlay" id="orderModal" onclick="closeModal(event)">
+<div class="modal-overlay" id="orderModal">
   <div class="modal">
     <div class="modal-header">
       <h3 id="modalTitle">Order Details</h3>
-      <button class="modal-close" onclick="closeModalDirect()"><i class="bi bi-x-lg"></i></button>
+      <button class="modal-close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-actions" id="modalActions"></div>
@@ -1515,11 +1563,11 @@
 </div>
 
 <!-- ADDON GROUP MODAL -->
-<div class="modal-overlay" id="groupModal" onclick="closeGroupModal(event)">
+<div class="modal-overlay" id="groupModal">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
       <h3 id="groupModalTitle">Add Addon Group</h3>
-      <button class="modal-close" onclick="closeGroupModalDirect()"><i class="bi bi-x-lg"></i></button>
+      <button class="modal-close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -1536,18 +1584,18 @@
       <div id="groupFormError" class="form-error" style="display:none"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal close" onclick="closeGroupModalDirect()">Cancel</button>
-      <button class="btn-modal next" onclick="saveGroup()">Save Group</button>
+      <button class="btn-modal close">Cancel</button>
+      <button class="btn-modal next">Save Group</button>
     </div>
   </div>
 </div>
 
 <!-- ADDON MODAL -->
-<div class="modal-overlay" id="addonModal" onclick="closeAddonModal(event)">
+<div class="modal-overlay" id="addonModal">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
       <h3 id="addonModalTitle">Add Addon</h3>
-      <button class="modal-close" onclick="closeAddonModalDirect()"><i class="bi bi-x-lg"></i></button>
+      <button class="modal-close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -1561,36 +1609,36 @@
       <div id="addonFormError" class="form-error" style="display:none"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal close" onclick="closeAddonModalDirect()">Cancel</button>
-      <button class="btn-modal next" onclick="saveAddon()">Save</button>
+      <button class="btn-modal close">Cancel</button>
+      <button class="btn-modal next">Save</button>
     </div>
   </div>
 </div>
 
 <!-- ASSIGN ADDONS MODAL -->
-<div class="modal-overlay" id="assignModal" onclick="closeAssignModal(event)">
+<div class="modal-overlay" id="assignModal">
   <div class="modal" style="max-width:440px">
     <div class="modal-header">
       <h3 id="assignModalTitle">Assign Add-ons</h3>
-      <button class="modal-close" onclick="closeAssignModalDirect()"><i class="bi bi-x-lg"></i></button>
+      <button class="modal-close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem">Select which addon groups apply to this item:</p>
       <div id="assignGroupsList"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal close" onclick="closeAssignModalDirect()">Cancel</button>
-      <button class="btn-modal next" onclick="saveAssignments()">Save</button>
+      <button class="btn-modal close">Cancel</button>
+      <button class="btn-modal next">Save</button>
     </div>
   </div>
 </div>
 
 <!-- MENU ITEM MODAL (Add / Edit) -->
-<div class="modal-overlay" id="menuModal" onclick="closeMenuModal(event)">
+<div class="modal-overlay" id="menuModal">
   <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <h3 id="menuModalTitle">Add Menu Item</h3>
-      <button class="modal-close" onclick="closeMenuModalDirect()"><i class="bi bi-x-lg"></i></button>
+      <button class="modal-close"><i class="bi bi-x-lg"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -1605,8 +1653,8 @@
             <option value="hot-coffee">Hot Coffee</option>
             <option value="cold-coffee">Cold Coffee</option>
             <option value="frappes">Frappes</option>
+            <option value="summer-coolers">Summer Coolers</option>
             <option value="desserts">Desserts</option>
-            <option value="sandwiches">Sandwiches</option>
           </select>
         </div>
       </div>
@@ -1634,1052 +1682,14 @@
       <div id="menuFormError" class="form-error" style="display:none"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-modal close" onclick="closeMenuModalDirect()">Cancel</button>
-      <button class="btn-modal next" id="menuSaveBtn" onclick="saveMenuItem()">Save Item</button>
+      <button class="btn-modal close">Cancel</button>
+      <button class="btn-modal next" id="menuSaveBtn">Save Item</button>
     </div>
   </div>
 </div>
 
 <script src="js/supabase-config.js"></script>
-<script>
-  const STATUS_FLOW  = { placed: 'preparing', preparing: 'out_for_delivery', out_for_delivery: 'delivered' };
-  const STATUS_LABEL = { placed: 'Placed', preparing: 'Preparing', out_for_delivery: 'Out for Delivery', delivered: 'Delivered', cancelled: 'Cancelled' };
-  const NEXT_LABEL   = { placed: 'Mark Preparing', preparing: 'Mark Out for Delivery', out_for_delivery: 'Mark Delivered' };
+<script src="js/admin-dashboard.js"></script>
 
-  let allOrders    = [];
-  let knownIds     = new Set();
-  let isFirstLoad  = true;
-  let currentFilter = 'active';
-  let searchQuery  = '';
-  let pollTimer    = null;
-  let activeModalOrder = null;
-
-  // ── AUTH CHECK ──
-  supabaseClient.auth.getSession().then(({ data }) => {
-    if (!data.session) { window.location.href = 'admin.html'; return; }
-    const email = data.session.user.email;
-    document.getElementById('userEmail').textContent = email;
-    document.getElementById('userAvatar').textContent = email[0].toUpperCase();
-    init();
-  });
-
-  async function init() {
-    checkShopStatus();
-    await loadOrders();
-    pollTimer = setInterval(loadOrders, 15000);
-    document.getElementById('searchInput').addEventListener('input', e => {
-      searchQuery = e.target.value.toLowerCase();
-      renderOrders();
-    });
-    if (Notification.permission === 'default') Notification.requestPermission();
-  }
-
-  // ── SHOP STATUS ──
-  async function checkShopStatus() {
-    const { data } = await supabaseClient.rpc('get_business_hours');
-    if (!data) return;
-    const hours = Array.isArray(data) ? data : JSON.parse(data);
-    const now = new Date();
-    const day = now.getDay();
-    const todayHours = hours.find(h => h.day_of_week === day);
-    if (!todayHours || todayHours.is_closed) { setShopStatus(false); return; }
-    const [oh, om] = todayHours.open_time.split(':').map(Number);
-    const [ch, cm] = todayHours.close_time.split(':').map(Number);
-    const nowMins = now.getHours() * 60 + now.getMinutes();
-    const openMins = oh * 60 + om;
-    let closeMins = ch * 60 + cm;
-    if (closeMins < openMins) closeMins += 24 * 60;
-    setShopStatus(nowMins >= openMins && nowMins < closeMins);
-  }
-
-  function setShopStatus(isOpen) {
-    const el = document.getElementById('shopStatus');
-    el.className = 'shop-status ' + (isOpen ? 'open' : 'closed');
-    document.getElementById('shopStatusText').textContent = isOpen ? 'Open' : 'Closed';
-  }
-
-  // ── LOAD ORDERS ──
-  async function loadOrders() {
-    const { data, error } = await supabaseClient
-      .from('orders')
-      .select('*, order_items(*)')
-      .order('created_at', { ascending: false });
-
-    if (error) { showToast('Failed to load orders', 'error'); return; }
-
-    const fresh = data || [];
-
-    if (!isFirstLoad) {
-      // Detect new orders
-      const newOrders = fresh.filter(o => !knownIds.has(o.id));
-      newOrders.forEach(o => notifyNewOrder(o));
-
-      // Detect status changes (e.g. customer cancelled from tracking page)
-      fresh.forEach(freshOrder => {
-        const old = allOrders.find(o => o.id === freshOrder.id);
-        if (old && old.status !== freshOrder.status) {
-          notifyStatusChange(freshOrder, old.status, freshOrder.status);
-        }
-      });
-    }
-
-    knownIds = new Set(fresh.map(o => o.id));
-    allOrders = fresh;
-    isFirstLoad = false;
-
-    updateStats();
-    renderOrders();
-  }
-
-  // ── NEW ORDER NOTIFICATION ──
-  function notifyNewOrder(order) {
-    beep();
-    showToast(`New order from ${order.customer_name}!`, 'success');
-    if (Notification.permission === 'granted') {
-      new Notification('New Order — Brew Beans', {
-        body: `#${order.order_number} from ${order.customer_name}`,
-        icon: 'img/favicon-192.png'
-      });
-    }
-  }
-
-  // ── STATUS CHANGE NOTIFICATION ──
-  function notifyStatusChange(order, oldStatus, newStatus) {
-    if (newStatus === 'cancelled') {
-      beep();
-      showToast(`Order #${order.order_number} was cancelled!`, 'error');
-      if (Notification.permission === 'granted') {
-        new Notification('Order Cancelled — Brew Beans', {
-          body: `#${order.order_number} by ${order.customer_name} was cancelled`,
-          icon: 'img/favicon-192.png'
-        });
-      }
-    }
-  }
-
-  function beep() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [880, 1100].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = freq;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3);
-        osc.start(ctx.currentTime + i * 0.15);
-        osc.stop(ctx.currentTime + i * 0.15 + 0.3);
-      });
-    } catch(e) {}
-  }
-
-  // ── STATS ──
-  function updateStats() {
-    const today = new Date().toDateString();
-    const active = allOrders.filter(o => !['delivered','cancelled'].includes(o.status));
-    const deliveredToday = allOrders.filter(o => o.status === 'delivered' && new Date(o.created_at).toDateString() === today);
-    const revenueToday = deliveredToday.reduce((s, o) => s + Number(o.total), 0);
-
-    document.getElementById('statActive').textContent = active.length;
-    document.getElementById('statDelivered').textContent = deliveredToday.length;
-    document.getElementById('statRevenue').textContent = 'Rs.' + revenueToday.toLocaleString();
-    document.getElementById('statTotal').textContent = allOrders.length;
-
-    const badge = document.getElementById('newOrdersBadge');
-    if (active.length > 0) { badge.textContent = active.length; badge.classList.add('show'); }
-    else badge.classList.remove('show');
-  }
-
-  // ── RENDER ORDERS ──
-  function renderOrders() {
-    const list = document.getElementById('ordersList');
-    let filtered = allOrders;
-
-    if (currentFilter === 'active')    filtered = allOrders.filter(o => !['delivered','cancelled'].includes(o.status));
-    if (currentFilter === 'delivered') filtered = allOrders.filter(o => o.status === 'delivered');
-    if (currentFilter === 'cancelled') filtered = allOrders.filter(o => o.status === 'cancelled');
-
-    if (searchQuery) {
-      filtered = filtered.filter(o =>
-        o.order_number?.toLowerCase().includes(searchQuery) ||
-        o.customer_name?.toLowerCase().includes(searchQuery) ||
-        o.phone?.toLowerCase().includes(searchQuery) ||
-        o.email?.toLowerCase().includes(searchQuery)
-      );
-    }
-
-    if (!filtered.length) {
-      list.innerHTML = `<div class="empty-state"><i class="bi bi-inbox"></i><p>No orders found</p></div>`;
-      return;
-    }
-
-    const fiveMinAgo = Date.now() - 5 * 60 * 1000;
-
-    list.innerHTML = filtered.map(o => {
-      const isNew = new Date(o.created_at).getTime() > fiveMinAgo && o.status === 'placed';
-      const items = (o.order_items || []).map(i => `${i.quantity}x ${escHtml(i.menu_item_name)}`).join(', ');
-      const nextStatus = STATUS_FLOW[o.status];
-      const payClass = o.payment_method === 'cod' ? 'payment-cod' : (o.payment_status === 'paid' ? 'payment-paid' : 'payment-pending');
-      const payLabel = o.payment_method === 'cod' ? 'COD' : o.payment_method.toUpperCase();
-
-      return `
-      <div class="order-card${isNew ? ' is-new' : ''}" onclick="openModal('${o.id}')" style="cursor:pointer">
-        <div class="order-top">
-          <div>
-            <div class="order-number">
-              #${escHtml(o.order_number)}
-              ${isNew ? '<span class="new-order-badge" style="margin-left:0.4rem">NEW</span>' : ''}
-            </div>
-            <div class="order-time">${new Date(o.created_at).toLocaleString()}</div>
-          </div>
-          <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
-            <span class="status-badge status-${o.status}">${STATUS_LABEL[o.status] || o.status}</span>
-            <span class="payment-badge ${payClass}">${payLabel}</span>
-          </div>
-        </div>
-
-        <div class="order-customer">
-          <div class="customer-field"><i class="bi bi-person"></i>${escHtml(o.customer_name)}</div>
-          <div class="customer-field"><i class="bi bi-telephone"></i>${escHtml(o.phone)}</div>
-          ${o.email ? `<div class="customer-field"><i class="bi bi-envelope"></i>${escHtml(o.email)}</div>` : ''}
-          ${o.address ? `<div class="customer-field"><i class="bi bi-geo-alt"></i>${escHtml(o.address)}</div>` : ''}
-        </div>
-
-        ${items ? `<div class="order-items-list"><i class="bi bi-bag" style="margin-right:0.4rem"></i>${items}</div>` : ''}
-        ${o.notes ? `<div class="order-items-list" style="background:#FFFBEB"><i class="bi bi-sticky" style="margin-right:0.4rem;color:#D97706"></i>${escHtml(o.notes)}</div>` : ''}
-
-        <div class="order-footer">
-          <div class="order-total">Rs. ${Number(o.total).toLocaleString()}
-            ${o.delivery_charge > 0 ? `<span style="font-size:0.75rem;color:var(--text-light);font-weight:400"> (Delivery: Rs.${Number(o.delivery_charge).toLocaleString()})</span>` : ''}
-          </div>
-          <div class="order-actions" onclick="event.stopPropagation()">
-            ${nextStatus ? `<button class="btn-action next" onclick="updateStatus('${o.order_number}','${nextStatus}')">${NEXT_LABEL[o.status]}</button>` : ''}
-            ${!['delivered','cancelled'].includes(o.status) ? `<button class="btn-action cancel" onclick="confirmCancel('${o.order_number}','${escHtml(o.customer_name)}')">Cancel</button>` : ''}
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // ── ORDER DETAIL MODAL ──
-  function openModal(orderId) {
-    const o = allOrders.find(x => x.id === orderId);
-    if (!o) return;
-    activeModalOrder = o;
-
-    document.getElementById('modalTitle').textContent = `Order #${o.order_number}`;
-
-    const payClass = o.payment_method === 'cod' ? 'payment-cod' : (o.payment_status === 'paid' ? 'payment-paid' : 'payment-pending');
-    const payLabel = o.payment_method === 'cod' ? 'Cash on Delivery' : o.payment_method.toUpperCase();
-    const items = o.order_items || [];
-
-    document.getElementById('modalBody').innerHTML = `
-      <div class="modal-section">
-        <div class="modal-section-title">Status</div>
-        <div style="display:flex;gap:0.5rem;align-items:center">
-          <span class="status-badge status-${o.status}">${STATUS_LABEL[o.status] || o.status}</span>
-          <span class="payment-badge ${payClass}">${payLabel}</span>
-        </div>
-      </div>
-
-      <div class="modal-section">
-        <div class="modal-section-title">Customer Details</div>
-        <div class="modal-grid">
-          <div class="modal-field"><label>Name</label><span>${escHtml(o.customer_name)}</span></div>
-          <div class="modal-field"><label>Phone</label><span>${escHtml(o.phone)}</span></div>
-          ${o.email ? `<div class="modal-field"><label>Email</label><span>${escHtml(o.email)}</span></div>` : ''}
-          ${o.address ? `<div class="modal-field full"><label>Address</label><span>${escHtml(o.address)}</span></div>` : ''}
-          ${o.notes ? `<div class="modal-field full" style="background:#FFFBEB"><label>Notes</label><span>${escHtml(o.notes)}</span></div>` : ''}
-        </div>
-      </div>
-
-      <div class="modal-section">
-        <div class="modal-section-title">Order Items</div>
-        <table class="modal-items-table">
-          <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-          <tbody>
-            ${items.map(i => `
-              <tr>
-                <td>${escHtml(i.menu_item_name)}</td>
-                <td>${i.quantity}</td>
-                <td>Rs.${Number(i.unit_price).toLocaleString()}</td>
-                <td>Rs.${Number(i.total_price).toLocaleString()}</td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-
-      <div class="modal-section">
-        <div class="modal-total-row"><span>Subtotal</span><span>Rs.${Number(o.subtotal).toLocaleString()}</span></div>
-        <div class="modal-total-row"><span>Delivery</span><span>Rs.${Number(o.delivery_charge).toLocaleString()}</span></div>
-        <div class="modal-total-row grand"><span>Total</span><span>Rs.${Number(o.total).toLocaleString()}</span></div>
-      </div>
-
-      <div class="modal-section" style="margin-bottom:0">
-        <div class="modal-section-title">Order Info</div>
-        <div class="modal-grid">
-          <div class="modal-field"><label>Order Number</label><span>${escHtml(o.order_number)}</span></div>
-          <div class="modal-field"><label>Placed At</label><span>${new Date(o.created_at).toLocaleString()}</span></div>
-        </div>
-      </div>
-    `;
-
-    const nextStatus = STATUS_FLOW[o.status];
-    document.getElementById('modalActions').innerHTML = `
-      <button class="btn-modal close" onclick="closeModalDirect()">Close</button>
-      ${!['delivered','cancelled'].includes(o.status) ? `<button class="btn-modal cancel" onclick="closeModalDirect();confirmCancel('${o.order_number}','${escHtml(o.customer_name)}')">Cancel Order</button>` : ''}
-      ${nextStatus ? `<button class="btn-modal next" onclick="updateStatusFromModal('${o.order_number}','${nextStatus}')">${NEXT_LABEL[o.status]}</button>` : ''}
-    `;
-
-    document.getElementById('orderModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal(e) {
-    if (e.target === document.getElementById('orderModal')) closeModalDirect();
-  }
-
-  function closeModalDirect() {
-    document.getElementById('orderModal').classList.remove('show');
-    document.body.style.overflow = '';
-    activeModalOrder = null;
-  }
-
-  async function updateStatusFromModal(orderNumber, newStatus) {
-    closeModalDirect();
-    await updateStatus(orderNumber, newStatus);
-  }
-
-  // ── CANCEL CONFIRM ──
-  let pendingCancelOrder = null;
-
-  function confirmCancel(orderNumber, customerName) {
-    pendingCancelOrder = orderNumber;
-    document.getElementById('confirmMsg').textContent =
-      `Cancel order #${orderNumber} for ${customerName}? This cannot be undone.`;
-    document.getElementById('confirmYesBtn').onclick = async () => {
-      closeConfirm();
-      await updateStatus(pendingCancelOrder, 'cancelled');
-    };
-    document.getElementById('confirmOverlay').classList.add('show');
-  }
-
-  function closeConfirm() {
-    document.getElementById('confirmOverlay').classList.remove('show');
-    pendingCancelOrder = null;
-  }
-
-  // ── UPDATE STATUS ──
-  async function updateStatus(orderNumber, newStatus) {
-    const { error } = await supabaseClient
-      .from('orders')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq('order_number', orderNumber);
-
-    if (error) { showToast('Failed to update order', 'error'); return; }
-
-    if (newStatus === 'cancelled') {
-      beep();
-      showToast(`Order #${orderNumber} cancelled`, 'error');
-    } else {
-      showToast(`#${orderNumber} → ${STATUS_LABEL[newStatus]}`, 'success');
-    }
-    await loadOrders();
-  }
-
-  // ── FILTER ──
-  function filterOrders(filter, btn) {
-    currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderOrders();
-  }
-
-  // ── NAVIGATION ──
-  const pageTitles = {
-    orders: ['Orders', 'Manage incoming orders'],
-    menu:   ['Menu', 'Manage your menu items'],
-    hours:  ['Business Hours', 'Set your opening hours'],
-    addons:    ['Add-ons', 'Manage addon groups and options'],
-    staff:     ['Staff PINs', 'Manage staff access'],
-    analytics: ['Analytics', 'Sales overview and insights'],
-  };
-
-  function showPage(page) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    event.currentTarget.classList.add('active');
-    document.getElementById('pageTitle').textContent = pageTitles[page][0];
-    document.getElementById('pageSubtitle').textContent = pageTitles[page][1];
-    if (page === 'menu') loadMenu();
-    if (page === 'hours') loadHours();
-    if (page === 'addons') loadAddonGroups();
-    if (page === 'staff') loadStaff();
-    if (page === 'analytics') loadAnalytics();
-  }
-
-  // ── LOGOUT ──
-  async function logout() {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'admin.html';
-  }
-
-  // ── HELPERS ──
-  function escHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── ADDON MANAGEMENT ──
-  let allAddonGroups = [];
-  let allAddons      = [];
-  let editingGroupId = null;
-  let editingAddonId = null;
-  let addonTargetGroupId = null;
-  let assignTargetItemId = null;
-
-  async function loadAddonGroups() {
-    const list = document.getElementById('addonGroupsList');
-    list.innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div><p>Loading...</p></div>';
-
-    const [groupsRes, addonsRes] = await Promise.all([
-      supabaseClient.from('addon_groups').select('*').order('id'),
-      supabaseClient.from('addons').select('*').order('id')
-    ]);
-
-    if (groupsRes.error) { list.innerHTML = '<div style="padding:1.5rem;color:var(--text-light)">Failed to load add-ons.</div>'; return; }
-    allAddonGroups = groupsRes.data || [];
-    allAddons      = addonsRes.data || [];
-    renderAddonGroups();
-  }
-
-  function renderAddonGroups() {
-    const list = document.getElementById('addonGroupsList');
-    if (!allAddonGroups.length) {
-      list.innerHTML = '<div class="empty-state"><i class="bi bi-tags"></i><p>No addon groups yet. Click "Add Group" to create one.</p></div>';
-      return;
-    }
-    list.innerHTML = allAddonGroups.map(g => {
-      const groupAddons = allAddons.filter(a => a.group_id === g.id);
-      return `
-        <div class="addon-group-card" id="ag-card-${g.id}">
-          <div class="addon-group-header" onclick="toggleGroup('${g.id}')">
-            <div class="addon-group-name">${escHtml(g.name)}</div>
-            <span class="req-badge ${g.is_required ? 'required' : 'optional'}">${g.is_required ? 'Required' : 'Optional'}</span>
-            <div class="menu-item-actions" onclick="event.stopPropagation()">
-              <button class="btn-icon" onclick="openGroupModal('${g.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
-              <button class="btn-icon danger" onclick="confirmDeleteGroup('${g.id}', '${escHtml(g.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
-            </div>
-            <i class="bi bi-chevron-down group-chevron"></i>
-          </div>
-          <div class="addon-group-body">
-            ${groupAddons.length ? groupAddons.map(a => `
-              <div class="addon-row">
-                <span class="addon-row-name">${escHtml(a.name)}</span>
-                <span class="addon-row-price">${Number(a.price) > 0 ? '+Rs.' + Number(a.price).toLocaleString() : 'Free'}</span>
-                <label class="toggle" title="${a.is_available ? 'Available' : 'Unavailable'}">
-                  <input type="checkbox" ${a.is_available ? 'checked' : ''} onchange="toggleAddonAvailable('${a.id}', this.checked)">
-                  <span class="toggle-slider"></span>
-                </label>
-                <button class="btn-icon" onclick="openAddonModal('${g.id}', '${a.id}')" title="Edit"><i class="bi bi-pencil"></i></button>
-                <button class="btn-icon danger" onclick="confirmDeleteAddon('${a.id}', '${escHtml(a.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
-              </div>`).join('') : '<div style="padding:0.6rem 1.25rem;font-size:0.82rem;color:var(--text-light)">No options yet.</div>'}
-            <button class="btn-add-addon" onclick="openAddonModal('${g.id}')"><i class="bi bi-plus-lg"></i> Add Option</button>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  function toggleGroup(id) {
-    document.getElementById('ag-card-' + id).classList.toggle('expanded');
-  }
-
-  // Group modal
-  function openGroupModal(groupId) {
-    editingGroupId = groupId || null;
-    const g = groupId ? allAddonGroups.find(x => x.id === groupId) : null;
-    document.getElementById('groupModalTitle').textContent = g ? 'Edit Group' : 'Add Addon Group';
-    document.getElementById('groupName').value = g ? g.name : '';
-    document.getElementById('groupRequired').checked = g ? !!g.is_required : false;
-    document.getElementById('groupFormError').style.display = 'none';
-    document.getElementById('groupModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeGroupModal(e) { if (e.target === document.getElementById('groupModal')) closeGroupModalDirect(); }
-  function closeGroupModalDirect() { document.getElementById('groupModal').classList.remove('show'); document.body.style.overflow = ''; editingGroupId = null; }
-
-  async function saveGroup() {
-    const name = document.getElementById('groupName').value.trim();
-    const is_required = document.getElementById('groupRequired').checked;
-    const errEl = document.getElementById('groupFormError');
-    if (!name) { errEl.textContent = 'Group name is required.'; errEl.style.display = 'block'; return; }
-    errEl.style.display = 'none';
-
-    let error;
-    if (editingGroupId) {
-      ({ error } = await supabaseClient.from('addon_groups').update({ name, is_required }).eq('id', editingGroupId));
-    } else {
-      ({ error } = await supabaseClient.from('addon_groups').insert({ name, is_required }));
-    }
-    if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
-    closeGroupModalDirect();
-    showToast(editingGroupId ? 'Group updated!' : 'Group created!', 'success');
-    await loadAddonGroups();
-  }
-
-  // Addon modal
-  function openAddonModal(groupId, addonId) {
-    addonTargetGroupId = groupId;
-    editingAddonId = addonId || null;
-    const a = addonId ? allAddons.find(x => x.id === addonId) : null;
-    document.getElementById('addonModalTitle').textContent = a ? 'Edit Option' : 'Add Option';
-    document.getElementById('addonName').value = a ? a.name : '';
-    document.getElementById('addonPrice').value = a ? a.price : '0';
-    document.getElementById('addonFormError').style.display = 'none';
-    document.getElementById('addonModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeAddonModal(e) { if (e.target === document.getElementById('addonModal')) closeAddonModalDirect(); }
-  function closeAddonModalDirect() { document.getElementById('addonModal').classList.remove('show'); document.body.style.overflow = ''; editingAddonId = null; }
-
-  async function saveAddon() {
-    const name = document.getElementById('addonName').value.trim();
-    const price = parseFloat(document.getElementById('addonPrice').value) || 0;
-    const errEl = document.getElementById('addonFormError');
-    if (!name) { errEl.textContent = 'Option name is required.'; errEl.style.display = 'block'; return; }
-    errEl.style.display = 'none';
-
-    let error;
-    if (editingAddonId) {
-      ({ error } = await supabaseClient.from('addons').update({ name, price }).eq('id', editingAddonId));
-    } else {
-      ({ error } = await supabaseClient.from('addons').insert({ name, price, group_id: addonTargetGroupId, is_available: true }));
-    }
-    if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
-    closeAddonModalDirect();
-    showToast(editingAddonId ? 'Option updated!' : 'Option added!', 'success');
-    await loadAddonGroups();
-    document.getElementById(`ag-card-${addonTargetGroupId}`)?.classList.add('expanded');
-  }
-
-  async function toggleAddonAvailable(id, val) {
-    const { error } = await supabaseClient.from('addons').update({ is_available: val }).eq('id', id);
-    if (error) { showToast('Failed to update', 'error'); await loadAddonGroups(); }
-  }
-
-  function confirmDeleteGroup(id, name) {
-    document.getElementById('confirmMsg').textContent = `Delete group "${name}" and all its options? This cannot be undone.`;
-    document.getElementById('confirmYesBtn').onclick = async () => {
-      closeConfirm();
-      const { error } = await supabaseClient.from('addon_groups').delete().eq('id', id);
-      if (error) { showToast('Failed to delete group', 'error'); return; }
-      showToast(`"${name}" deleted`, 'success');
-      await loadAddonGroups();
-    };
-    document.getElementById('confirmOverlay').classList.add('show');
-  }
-
-  function confirmDeleteAddon(id, name) {
-    document.getElementById('confirmMsg').textContent = `Delete option "${name}"?`;
-    document.getElementById('confirmYesBtn').onclick = async () => {
-      closeConfirm();
-      const { error } = await supabaseClient.from('addons').delete().eq('id', id);
-      if (error) { showToast('Failed to delete option', 'error'); return; }
-      showToast(`"${name}" deleted`, 'success');
-      await loadAddonGroups();
-    };
-    document.getElementById('confirmOverlay').classList.add('show');
-  }
-
-  // Assign addons to menu item
-  async function openAssignModal(itemId, itemName) {
-    assignTargetItemId = itemId;
-    document.getElementById('assignModalTitle').textContent = `Add-ons for ${itemName}`;
-    const listEl = document.getElementById('assignGroupsList');
-    listEl.innerHTML = '<div style="text-align:center;padding:1rem"><div class="spinner-ring" style="margin:auto"></div></div>';
-    document.getElementById('assignModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-
-    const [groupsRes, assignedRes] = await Promise.all([
-      supabaseClient.from('addon_groups').select('*').order('id'),
-      supabaseClient.from('menu_item_addon_groups').select('addon_group_id').eq('menu_item_id', itemId)
-    ]);
-
-    const groups = groupsRes.data || [];
-    const assigned = new Set((assignedRes.data || []).map(r => r.addon_group_id));
-
-    if (!groups.length) {
-      listEl.innerHTML = '<p style="color:var(--text-light);font-size:0.85rem">No addon groups yet. Create groups in the Add-ons section first.</p>';
-      return;
-    }
-
-    listEl.innerHTML = groups.map(g => `
-      <div class="assign-group-row">
-        <input type="checkbox" id="assign-${g.id}" ${assigned.has(g.id) ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;accent-color:var(--secondary)">
-        <label for="assign-${g.id}">${escHtml(g.name)} <span style="color:var(--text-light);font-size:0.78rem">${g.is_required ? '(Required)' : '(Optional)'}</span></label>
-      </div>
-    `).join('');
-  }
-
-  function closeAssignModal(e) { if (e.target === document.getElementById('assignModal')) closeAssignModalDirect(); }
-  function closeAssignModalDirect() { document.getElementById('assignModal').classList.remove('show'); document.body.style.overflow = ''; assignTargetItemId = null; }
-
-  async function saveAssignments() {
-    const checkboxes = document.querySelectorAll('#assignGroupsList input[type="checkbox"]');
-    const selectedIds = [];
-    checkboxes.forEach(cb => { if (cb.checked) selectedIds.push(cb.id.replace('assign-', '')); });
-
-    const { error: delErr } = await supabaseClient.from('menu_item_addon_groups').delete().eq('menu_item_id', assignTargetItemId);
-    if (delErr) { showToast('Delete error: ' + delErr.message, 'error'); return; }
-
-    if (selectedIds.length) {
-      const rows = selectedIds.map(gid => ({ menu_item_id: assignTargetItemId, addon_group_id: gid }));
-      const { error } = await supabaseClient.from('menu_item_addon_groups').insert(rows);
-      if (error) { showToast('Insert error: ' + error.message, 'error'); return; }
-    }
-
-    closeAssignModalDirect();
-    showToast('Add-ons assigned!', 'success');
-  }
-
-  // ── BUSINESS HOURS ──
-  const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  let hoursData = [];
-
-  async function loadHours() {
-    const container = document.getElementById('hoursContainer');
-    container.innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div><p>Loading hours...</p></div>';
-    const { data, error } = await supabaseClient.from('business_hours').select('*').order('day_of_week');
-    if (error) { container.innerHTML = '<div style="padding:1.5rem;color:var(--text-light)">Failed to load hours.</div>'; return; }
-    hoursData = data || [];
-    renderHours();
-  }
-
-  function renderHours() {
-    const container = document.getElementById('hoursContainer');
-    container.innerHTML = hoursData.map(h => `
-      <div class="hours-row${h.is_closed ? ' is-closed' : ''}" id="hours-row-${h.day_of_week}">
-        <div class="hours-day">${DAY_NAMES[h.day_of_week]}</div>
-        <div class="hours-time">
-          <span>Open</span>
-          <input type="time" class="time-input" id="open-${h.day_of_week}" value="${(h.open_time || '09:00').slice(0,5)}">
-        </div>
-        <div class="hours-time">
-          <span>Close</span>
-          <input type="time" class="time-input" id="close-${h.day_of_week}" value="${(h.close_time || '22:00').slice(0,5)}">
-        </div>
-        <div class="hours-closed-wrap">
-          <label class="toggle">
-            <input type="checkbox" id="closed-${h.day_of_week}" ${h.is_closed ? 'checked' : ''} onchange="toggleDayClosed(${h.day_of_week}, this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-          <span class="hours-closed-label">Closed</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function toggleDayClosed(day, isClosed) {
-    const row = document.getElementById('hours-row-' + day);
-    if (isClosed) row.classList.add('is-closed');
-    else row.classList.remove('is-closed');
-  }
-
-  async function saveHours() {
-    const btn = document.getElementById('saveHoursBtn');
-    btn.textContent = 'Saving...';
-    btn.disabled = true;
-    let hasError = false;
-
-    for (const h of hoursData) {
-      const open_time  = document.getElementById('open-'   + h.day_of_week).value;
-      const close_time = document.getElementById('close-'  + h.day_of_week).value;
-      const is_closed  = document.getElementById('closed-' + h.day_of_week).checked;
-      const { error } = await supabaseClient
-        .from('business_hours')
-        .update({ open_time, close_time, is_closed })
-        .eq('day_of_week', h.day_of_week);
-      if (error) hasError = true;
-    }
-
-    btn.textContent = 'Save Changes';
-    btn.disabled = false;
-    if (hasError) { showToast('Failed to save some hours', 'error'); return; }
-    showToast('Business hours saved!', 'success');
-    checkShopStatus();
-  }
-
-  // ── STAFF PINs ──
-  let editingStaffId = null;
-
-  async function loadStaff() {
-    const el = document.getElementById('staffList');
-    el.innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div><p>Loading...</p></div>';
-    const { data, error } = await supabaseClient.from('staff_pins').select('*').order('created_at');
-    if (error) { el.innerHTML = '<div style="padding:1.5rem;color:var(--text-light)">Failed to load staff.</div>'; return; }
-    if (!data || !data.length) {
-      el.innerHTML = '<div class="empty-state"><i class="bi bi-people"></i><p>No staff members yet</p></div>';
-      return;
-    }
-    el.innerHTML = `
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border-light);text-align:left">
-            <th style="padding:0.75rem 1.25rem;font-size:0.8rem;color:var(--text-light);font-weight:600">NAME</th>
-            <th style="padding:0.75rem 1.25rem;font-size:0.8rem;color:var(--text-light);font-weight:600">PIN</th>
-            <th style="padding:0.75rem 1.25rem;font-size:0.8rem;color:var(--text-light);font-weight:600">ADDED</th>
-            <th style="padding:0.75rem 1.25rem"></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map(s => `
-            <tr style="border-bottom:1px solid var(--border-light)">
-              <td style="padding:0.85rem 1.25rem;font-weight:500">${escHtml(s.name)}</td>
-              <td style="padding:0.85rem 1.25rem">
-                <span class="pin-display" data-id="${s.id}" data-pin="${escHtml(s.pin)}" style="font-family:monospace;cursor:pointer" title="Click to reveal">••••</span>
-              </td>
-              <td style="padding:0.85rem 1.25rem;color:var(--text-light);font-size:0.85rem">${new Date(s.created_at).toLocaleDateString()}</td>
-              <td style="padding:0.85rem 1.25rem;text-align:right;white-space:nowrap">
-                <button class="btn-icon" onclick="openStaffModal('${s.id}','${escHtml(s.name)}','${escHtml(s.pin)}')" title="Edit"><i class="bi bi-pencil"></i></button>
-                <button class="btn-icon danger" onclick="deleteStaff('${s.id}','${escHtml(s.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>`;
-
-    // PIN reveal on click
-    document.querySelectorAll('.pin-display').forEach(el => {
-      el.addEventListener('click', function() {
-        this.textContent = this.textContent === '••••' ? this.dataset.pin : '••••';
-      });
-    });
-  }
-
-  function openStaffModal(id = null, name = '', pin = '') {
-    editingStaffId = id;
-    document.getElementById('staffModalTitle').textContent = id ? 'Edit Staff' : 'Add Staff';
-    document.getElementById('staffName').value = name;
-    document.getElementById('staffPin').value = pin;
-    document.getElementById('staffSaveBtn').textContent = id ? 'Update' : 'Save';
-    document.getElementById('staffModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => document.getElementById('staffName').focus(), 100);
-  }
-
-  function closeStaffModal(e) { if (e.target === document.getElementById('staffModal')) closeStaffModalDirect(); }
-  function closeStaffModalDirect() {
-    document.getElementById('staffModal').classList.remove('show');
-    document.body.style.overflow = '';
-    editingStaffId = null;
-  }
-
-  async function saveStaff() {
-    const name = document.getElementById('staffName').value.trim();
-    const pin  = document.getElementById('staffPin').value.trim();
-    if (!name) { showToast('Name is required', 'error'); return; }
-    if (!/^\d{4,6}$/.test(pin)) { showToast('PIN must be 4–6 digits', 'error'); return; }
-
-    const btn = document.getElementById('staffSaveBtn');
-    btn.textContent = 'Saving...'; btn.disabled = true;
-
-    let error;
-    if (editingStaffId) {
-      ({ error } = await supabaseClient.from('staff_pins').update({ name, pin }).eq('id', editingStaffId));
-    } else {
-      ({ error } = await supabaseClient.from('staff_pins').insert({ name, pin }));
-    }
-
-    btn.textContent = editingStaffId ? 'Update' : 'Save'; btn.disabled = false;
-    if (error) { showToast(error.message || 'Failed to save', 'error'); return; }
-    closeStaffModalDirect();
-    showToast(editingStaffId ? 'Staff updated!' : 'Staff added!', 'success');
-    await loadStaff();
-  }
-
-  async function deleteStaff(id, name) {
-    if (!confirm(`Delete "${name}"? They will lose staff access immediately.`)) return;
-    const { error } = await supabaseClient.from('staff_pins').delete().eq('id', id);
-    if (error) { showToast('Failed to delete', 'error'); return; }
-    showToast(`"${name}" removed`, 'success');
-    await loadStaff();
-  }
-
-  // ── ANALYTICS ──
-  async function loadAnalytics() {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const weekStart = new Date(now - 6 * 86400000).toISOString().split('T')[0];
-
-    // Fetch month orders + last 7 days orders in parallel
-    const [{ data: monthOrders }, { data: allItems }] = await Promise.all([
-      supabaseClient.from('orders').select('id, total, status, created_at').gte('created_at', monthStart),
-      supabaseClient.from('order_items').select('quantity, menu_item_name')
-    ]);
-
-    const orders = monthOrders || [];
-    const items  = allItems || [];
-
-    // Today
-    const todayOrders = orders.filter(o => o.created_at.startsWith(todayStr));
-    const todayRev    = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
-
-    // Month
-    const monthRev  = orders.reduce((s, o) => s + (o.total || 0), 0);
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    const avgOrder  = orders.length ? Math.round(monthRev / orders.length) : 0;
-    const rate      = orders.length ? Math.round((delivered / orders.length) * 100) : 0;
-
-    // Stat cards
-    document.getElementById('statTodayOrders').textContent  = todayOrders.length;
-    document.getElementById('statTodayRevenue').textContent = 'Rs. ' + todayRev.toLocaleString();
-    document.getElementById('statMonthOrders').textContent  = orders.length;
-    document.getElementById('statMonthRevenue').textContent = 'Rs. ' + monthRev.toLocaleString();
-    document.getElementById('statAvgOrder').textContent     = 'Rs. ' + avgOrder.toLocaleString();
-    document.getElementById('statCompletionRate').textContent = rate + '%';
-
-    // Status breakdown
-    const STATUS_LABELS = { placed:'Placed', preparing:'Preparing', out_for_delivery:'Out for Delivery', delivered:'Delivered', cancelled:'Cancelled' };
-    const statusColors  = { placed:'#0d6efd', preparing:'#f59e0b', out_for_delivery:'#8b5cf6', delivered:'#16a34a', cancelled:'#dc2626' };
-    const statusCounts  = {};
-    orders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
-    const maxStatus = Math.max(1, ...Object.values(statusCounts));
-    const statusHtml = Object.entries(statusCounts).length
-      ? Object.entries(statusCounts).map(([s, n]) => `
-          <div style="margin-bottom:0.75rem">
-            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-              <span style="font-weight:500">${STATUS_LABELS[s] || s}</span>
-              <span style="color:var(--text-light)">${n}</span>
-            </div>
-            <div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden">
-              <div style="height:100%;width:${Math.round((n/maxStatus)*100)}%;background:${statusColors[s]||'#64748b'};border-radius:4px;transition:width 0.6s"></div>
-            </div>
-          </div>`).join('')
-      : '<p style="color:var(--text-light);font-size:0.875rem">No orders this month.</p>';
-    document.getElementById('statusBreakdown').innerHTML = statusHtml;
-
-    // Top items
-    const itemTotals = {};
-    items.forEach(i => {
-      const name = i.menu_item_name || 'Unknown';
-      itemTotals[name] = (itemTotals[name] || 0) + (i.quantity || 1);
-    });
-    const topSorted = Object.entries(itemTotals).sort((a,b) => b[1]-a[1]).slice(0, 5);
-    const maxItem = Math.max(1, topSorted[0]?.[1] || 1);
-    const topHtml = topSorted.length
-      ? topSorted.map(([name, qty], i) => `
-          <div style="margin-bottom:0.75rem">
-            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
-              <span style="font-weight:500">${escHtml(name)}</span>
-              <span style="color:var(--text-light)">${qty} sold</span>
-            </div>
-            <div style="height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden">
-              <div style="height:100%;width:${Math.round((qty/maxItem)*100)}%;background:var(--primary);opacity:${1 - i*0.15};border-radius:4px;transition:width 0.6s"></div>
-            </div>
-          </div>`).join('')
-      : '<p style="color:var(--text-light);font-size:0.875rem">No sales data yet.</p>';
-    document.getElementById('topItems').innerHTML = topHtml;
-
-    // Last 7 days table
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now - i * 86400000);
-      days.push(d.toISOString().split('T')[0]);
-    }
-    const dayMap = {};
-    orders.forEach(o => {
-      const day = o.created_at.split('T')[0];
-      if (!dayMap[day]) dayMap[day] = { count: 0, rev: 0 };
-      dayMap[day].count++;
-      dayMap[day].rev += o.total || 0;
-    });
-    const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const tableRows = days.map(d => {
-      const { count = 0, rev = 0 } = dayMap[d] || {};
-      const date = new Date(d + 'T00:00:00');
-      const label = `${dayLabels[date.getDay()]} ${date.getDate()}/${date.getMonth()+1}`;
-      return `<tr style="border-bottom:1px solid var(--border-light)">
-        <td style="padding:0.6rem 1rem;font-size:0.875rem">${label}</td>
-        <td style="padding:0.6rem 1rem;font-size:0.875rem;text-align:center">${count}</td>
-        <td style="padding:0.6rem 1rem;font-size:0.875rem;text-align:right">Rs. ${rev.toLocaleString()}</td>
-      </tr>`;
-    }).join('');
-    document.getElementById('last7Days').innerHTML = `
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="border-bottom:2px solid var(--border-light)">
-            <th style="padding:0.5rem 1rem;text-align:left;font-size:0.78rem;color:var(--text-light);font-weight:600">DATE</th>
-            <th style="padding:0.5rem 1rem;text-align:center;font-size:0.78rem;color:var(--text-light);font-weight:600">ORDERS</th>
-            <th style="padding:0.5rem 1rem;text-align:right;font-size:0.78rem;color:var(--text-light);font-weight:600">REVENUE</th>
-          </tr>
-        </thead>
-        <tbody>${tableRows}</tbody>
-      </table>`;
-  }
-
-  // ── MENU MANAGEMENT ──
-  let allMenuItems = [];
-  let editingMenuId = null;
-
-  const CATEGORY_LABELS = {
-    'hot-coffee': 'Hot Coffee',
-    'cold-coffee': 'Cold Coffee',
-    'frappes': 'Frappes',
-    'desserts': 'Desserts',
-    'sandwiches': 'Sandwiches'
-  };
-
-  async function loadMenu() {
-    const grid = document.getElementById('menuGrid');
-    grid.innerHTML = '<div class="loading-spinner"><div class="spinner-ring"></div><p>Loading menu...</p></div>';
-    const { data, error } = await supabaseClient.from('menu_items').select('*').order('id');
-    if (error) {
-      grid.innerHTML = '<div class="empty-state"><i class="bi bi-exclamation-circle"></i><p>Failed to load menu</p></div>';
-      return;
-    }
-    allMenuItems = data || [];
-    renderMenuGrid();
-  }
-
-  function renderMenuGrid() {
-    const grid = document.getElementById('menuGrid');
-    if (!allMenuItems.length) {
-      grid.innerHTML = '<div class="empty-state"><i class="bi bi-cup-hot"></i><p>No menu items yet</p></div>';
-      return;
-    }
-    grid.innerHTML = allMenuItems.map(item => `
-      <div class="menu-item-card">
-        ${item.image
-          ? `<img class="menu-item-img" src="${escHtml(item.image)}" alt="${escHtml(item.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-          : ''}
-        <div class="menu-item-img-placeholder" style="${item.image ? 'display:none' : 'display:flex'}"><i class="bi bi-image"></i></div>
-        <div class="menu-item-body">
-          <div class="menu-item-top">
-            <div class="menu-item-name">${escHtml(item.name)}</div>
-            <span class="category-badge">${escHtml(CATEGORY_LABELS[item.category] || item.category)}</span>
-          </div>
-          ${item.description ? `<div class="menu-item-desc">${escHtml(item.description)}</div>` : ''}
-          <div class="menu-item-footer">
-            <div class="menu-item-price">Rs. ${Number(item.price).toLocaleString()}</div>
-            <div class="menu-item-actions">
-              <label class="toggle" title="${item.is_available ? 'Available' : 'Unavailable'}">
-                <input type="checkbox" ${item.is_available ? 'checked' : ''} onchange="toggleAvailable(${item.id}, this.checked)">
-                <span class="toggle-slider"></span>
-              </label>
-              <button class="btn-icon ${item.is_popular ? 'popular-active' : ''}" onclick="togglePopular(${item.id}, ${!item.is_popular})" title="${item.is_popular ? 'Remove from Popular' : 'Mark as Popular'}"><i class="bi bi-star${item.is_popular ? '-fill' : ''}"></i></button>
-              <button class="btn-icon" onclick="openAssignModal(${item.id}, '${escHtml(item.name)}')" title="Add-ons"><i class="bi bi-tags"></i></button>
-              <button class="btn-icon" onclick="openMenuModal(${item.id})" title="Edit"><i class="bi bi-pencil"></i></button>
-              <button class="btn-icon danger" onclick="confirmDeleteMenuItem(${item.id}, '${escHtml(item.name)}')" title="Delete"><i class="bi bi-trash"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function openMenuModal(itemId) {
-    editingMenuId = itemId || null;
-    const item = itemId ? allMenuItems.find(i => i.id === itemId) : null;
-    document.getElementById('menuModalTitle').textContent = item ? 'Edit Menu Item' : 'Add Menu Item';
-    document.getElementById('menuName').value = item ? item.name : '';
-    document.getElementById('menuCategory').value = item ? item.category : '';
-    document.getElementById('menuDesc').value = item ? (item.description || '') : '';
-    document.getElementById('menuPrice').value = item ? item.price : '';
-    document.getElementById('menuAvailable').value = item ? String(item.is_available) : 'true';
-    document.getElementById('menuImage').value = item ? (item.image || '') : '';
-    document.getElementById('menuFormError').style.display = 'none';
-    document.getElementById('menuModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeMenuModal(e) {
-    if (e.target === document.getElementById('menuModal')) closeMenuModalDirect();
-  }
-
-  function closeMenuModalDirect() {
-    document.getElementById('menuModal').classList.remove('show');
-    document.body.style.overflow = '';
-    editingMenuId = null;
-  }
-
-  async function saveMenuItem() {
-    const name = document.getElementById('menuName').value.trim();
-    const category = document.getElementById('menuCategory').value;
-    const description = document.getElementById('menuDesc').value.trim();
-    const price = parseFloat(document.getElementById('menuPrice').value);
-    const is_available = document.getElementById('menuAvailable').value === 'true';
-    const image = document.getElementById('menuImage').value.trim() || null;
-    const errEl = document.getElementById('menuFormError');
-
-    if (!name || !category || isNaN(price) || price < 0) {
-      errEl.textContent = 'Name, category and a valid price are required.';
-      errEl.style.display = 'block';
-      return;
-    }
-    errEl.style.display = 'none';
-
-    const btn = document.getElementById('menuSaveBtn');
-    btn.textContent = 'Saving...';
-    btn.disabled = true;
-
-    const payload = { name, category, description: description || null, price, is_available, image };
-    let error;
-
-    if (editingMenuId) {
-      ({ error } = await supabaseClient.from('menu_items').update(payload).eq('id', editingMenuId));
-    } else {
-      ({ error } = await supabaseClient.from('menu_items').insert(payload));
-    }
-
-    btn.textContent = 'Save Item';
-    btn.disabled = false;
-
-    if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
-
-    closeMenuModalDirect();
-    showToast(editingMenuId ? 'Item updated!' : 'Item added!', 'success');
-    await loadMenu();
-  }
-
-  async function toggleAvailable(id, val) {
-    const { error } = await supabaseClient.from('menu_items').update({ is_available: val }).eq('id', id);
-    if (error) { showToast('Failed to update', 'error'); await loadMenu(); return; }
-    showToast(val ? 'Item marked available' : 'Item marked unavailable', 'success');
-  }
-
-  async function togglePopular(id, val) {
-    const { error } = await supabaseClient.from('menu_items').update({ is_popular: val }).eq('id', id);
-    if (error) { showToast('Failed to update', 'error'); await loadMenu(); return; }
-    const item = allMenuItems.find(i => i.id === id);
-    if (item) item.is_popular = val;
-    renderMenuGrid();
-    showToast(val ? '⭐ Marked as Popular' : 'Removed from Popular', 'success');
-  }
-
-  function confirmDeleteMenuItem(id, name) {
-    document.getElementById('confirmMsg').textContent = `Delete "${name}"? This cannot be undone.`;
-    document.getElementById('confirmYesBtn').onclick = async () => {
-      closeConfirm();
-      const { error } = await supabaseClient.from('menu_items').delete().eq('id', id);
-      if (error) { showToast('Failed to delete item', 'error'); return; }
-      showToast(`"${name}" deleted`, 'success');
-      await loadMenu();
-    };
-    document.getElementById('confirmOverlay').classList.add('show');
-  }
-
-  function showToast(msg, type = 'success') {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-circle-fill'}"></i> ${msg}`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
-  }
-</script>
 </body>
 </html>

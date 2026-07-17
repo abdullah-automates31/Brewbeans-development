@@ -1061,6 +1061,38 @@ html.bb-no-splash #loading-screen {
 /* ============================================
    MENU SECTION
    ============================================ */
+.menu-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 480px;
+    margin: 0 auto 1.5rem;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 0.6rem 1.25rem;
+    transition: var(--transition);
+}
+.menu-search-bar:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(42,95,58,0.08);
+}
+.menu-search-bar i {
+    color: var(--text-light);
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.menu-search-bar input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-family: var(--font-primary);
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: transparent;
+}
+.menu-search-bar input::placeholder { color: var(--text-light); }
+
 .menu-filters {
     display: flex;
     flex-wrap: wrap;
@@ -2924,4 +2956,111 @@ textarea:focus-visible {
 .btn-browse-menu:hover {
     background: var(--secondary);
     transform: translateY(-2px);
+}
+
+/* ============================================
+   RETURNING CUSTOMER BANNER
+   ============================================ */
+.rc-banner {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.25rem;
+}
+.rc-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: #0F3D2E;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+.rc-header i {
+    color: #2E8B57;
+    font-size: 1.1rem;
+}
+.rc-subtitle {
+    font-size: 0.78rem;
+    color: #4a7c59;
+    margin: 0 0 0.75rem;
+}
+.rc-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.rc-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    background: #fff;
+    border-radius: 8px;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid #d1fae5;
+}
+.rc-item-img {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.rc-item-info {
+    flex: 1;
+    min-width: 0;
+}
+.rc-item-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.rc-item-reason {
+    font-size: 0.7rem;
+    color: #2E8B57;
+    margin-top: 2px;
+}
+.rc-add-btn {
+    background: #2E8B57;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+.rc-add-btn:hover { background: #0F3D2E; }
+
+/* ============================================
+   TRACK ORDER NAV BUTTON
+   ============================================ */
+.btn-track-nav {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 0.35rem 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}
+.btn-track-nav:hover {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.5);
 }

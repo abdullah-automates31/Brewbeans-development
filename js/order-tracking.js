@@ -96,10 +96,20 @@ async function trackOrder(orderNumber, phone, silent) {
     currentPhone = phone;
 
     if (lastStatus && lastStatus !== order.status) {
-        const label = STATUS_LABELS[order.status] || order.status;
-        $('#trackError').removeClass('alert-warning alert-danger').addClass('alert-success').text(`Order status updated: ${label}`).show();
-        if (notifyEnabled && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Brew Beans order update', { body: `${orderNumber} is now ${label}` });
+        if (order.status === 'cancelled') {
+            $('#trackError').removeClass('alert-warning alert-success').addClass('alert-danger')
+                .html('<strong>Order Cancelled</strong> — Your order has been cancelled. Please contact us for help.').show();
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Brew Beans — Order Cancelled', {
+                    body: `Your order ${orderNumber} has been cancelled. Please contact us for assistance.`
+                });
+            }
+        } else {
+            const label = STATUS_LABELS[order.status] || order.status;
+            $('#trackError').removeClass('alert-warning alert-danger').addClass('alert-success').text(`Order status updated: ${label}`).show();
+            if (notifyEnabled && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('Brew Beans order update', { body: `${orderNumber} is now ${label}` });
+            }
         }
     }
     lastStatus = order.status;
@@ -201,5 +211,17 @@ $(document).ready(function () {
 
     if (order && phone) {
         trackOrder(order, phone);
+
+        if ('Notification' in window) {
+            if (Notification.permission === 'granted') {
+                notifyEnabled = true;
+                $('#notifyBtn').html('<i class="bi bi-bell-fill me-1"></i>Notifying');
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission().then(perm => {
+                    notifyEnabled = perm === 'granted';
+                    if (notifyEnabled) $('#notifyBtn').html('<i class="bi bi-bell-fill me-1"></i>Notifying');
+                });
+            }
+        }
     }
 });

@@ -75,11 +75,17 @@ $('#statusFilter button').on('click', function () {
 
 $('#searchInput').on('input', function () { renderOrders(); });
 
-function showOrdersView() {
+function showOrdersView(initialData) {
     $('#loginView').hide();
     $('#ordersView').show();
     if (typeof AOS !== 'undefined') AOS.refresh();
-    loadOrders(true);
+    if (initialData !== undefined) {
+        allOrders = initialData || [];
+        knownOrderNumbers = new Set(allOrders.map(o => o.order_number));
+        renderOrders();
+    } else {
+        loadOrders(true);
+    }
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(() => loadOrders(false), 15000);
 }
@@ -96,13 +102,13 @@ function showLoginView(message) {
 }
 
 async function verifyAndEnter(pin) {
-    const { error } = await supabaseClient.rpc('staff_list_orders', { p_pin: pin });
+    const { data, error } = await supabaseClient.rpc('staff_list_orders', { p_pin: pin });
     if (error) {
         throw new Error('Incorrect PIN');
     }
     staffPin = pin;
     sessionStorage.setItem('bbStaffPin', pin);
-    showOrdersView();
+    showOrdersView(data);
 }
 
 $('#pinForm').on('submit', async function (e) {
@@ -182,8 +188,8 @@ function renderOrders() {
                     <span class="text-muted">${escapeHtml(order.payment_method.toUpperCase())} • ${escapeHtml(order.payment_status)}</span>
                 </div>
                 <div class="staff-status-actions">
-                    ${order.status !== 'cancelled' ? actionsHtml : ''}
-                    ${order.status !== 'cancelled' && order.status !== 'delivered' ? `<button class="btn btn-sm btn-outline-danger status-btn" data-order="${escapeHtml(order.order_number)}" data-status="cancelled">Cancel</button>` : ''}
+                    ${order.status !== 'cancelled' && order.status !== 'delivered' ? actionsHtml : ''}
+                    ${order.status !== 'cancelled' && order.status !== 'delivered' ? `<button class="btn btn-sm btn-outline-danger cancel-btn" data-order="${escapeHtml(order.order_number)}">Cancel</button>` : ''}
                 </div>
             </div>
         `);
@@ -192,8 +198,18 @@ function renderOrders() {
 }
 
 async function loadOrders(isInitial) {
-    if (isInitial) $('#ordersList').html('<p class="text-center text-muted">Loading...</p>');
+    if (isInitial) $('#ordersList').html('<p class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading orders...</p>');
+
+    let settled = false;
+    const timeoutId = setTimeout(() => {
+        if (!settled) { settled = true; showLoginView('Connection timed out. Check internet and try again.'); }
+    }, 12000);
+
     const { data, error } = await supabaseClient.rpc('staff_list_orders', { p_pin: staffPin });
+    clearTimeout(timeoutId);
+    if (settled) return;
+    settled = true;
+
     if (error) {
         showLoginView(error.message && error.message.includes('Too many') ? error.message : 'Session expired. Please log in again.');
         return;
@@ -211,6 +227,26 @@ async function loadOrders(isInitial) {
     allOrders = data || [];
     renderOrders();
 }
+
+$(document).on('click', '.cancel-btn', async function () {
+    const orderNumber = $(this).data('order');
+    if (!confirm(`Cancel order #${orderNumber}? This cannot be undone.`)) return;
+    $(this).prop('disabled', true);
+
+    const { error } = await supabaseClient.rpc('staff_update_order_status', {
+        p_pin: staffPin,
+        p_order_number: orderNumber,
+        p_new_status: 'cancelled'
+    });
+
+    if (error) {
+        staffToast('Could not cancel order. Please try again.', 'danger');
+        $(this).prop('disabled', false);
+        return;
+    }
+    staffToast(`Order #${orderNumber} cancelled`, 'warning');
+    loadOrders(true);
+});
 
 $(document).on('click', '.status-btn', async function () {
     const orderNumber = $(this).data('order');
