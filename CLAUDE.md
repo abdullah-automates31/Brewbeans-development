@@ -8,18 +8,19 @@ Brew Beans is a static coffee shop website with a Supabase backend. There is no 
 
 ## Architecture
 
-Three pages, each with a corresponding JS file:
-
 | Page | JS | Purpose |
 |---|---|---|
-| `index.html` | `js/main.js` | Customer-facing: menu, cart, ordering, geolocation |
-| `order-tracking.html` | `js/order-tracking.js` | Real-time order status with polling and browser notifications |
-| `staff.html` | `js/staff.js` | PIN-protected staff dashboard for order management |
+| `index.html` | `js/main.js` | Customer-facing: menu (`menuItems` array), cart, ordering, geolocation |
+| `order-tracking.html` | `js/order-tracking.js` | Order status polling (10 s) + browser notifications |
+| `staff.html` | `js/staff.js` | PIN-protected staff dashboard, polls 15 s |
+| `admin.html` | inline script | Supabase Auth email/password login page |
+| `admin-dashboard.html` | `js/admin-dashboard.js` | Full admin UI (Supabase Auth session) |
+| `privacy-policy.html`, `terms.html` | none | Static legal pages |
 
-**Shared across all pages**: `js/supabase-config.js` (initializes global `supabaseClient`) and `js/scroll-fx.js` (AOS init + scroll progress bar).
+**Shared**: `js/supabase-config.js` (global `supabaseClient`) and `js/scroll-fx.js` (AOS init + scroll progress bar) on **all pages except `index.html`** (index skips `scroll-fx.js`; AOS is inited inside `main.js`).
 
-**Script load order within each page** (order matters — no bundler):
-Bootstrap JS → jQuery 3.7.1 → AOS → Supabase JS client → `supabase-config.js` → page-specific JS → `scroll-fx.js`
+**Script load order** (no bundler — order matters):
+Bootstrap JS → jQuery 3.7.1 → AOS 2.3.4 → Supabase JS v2 → `supabase-config.js` → page-specific JS → [`scroll-fx.js`]
 
 **Ignore the nested `Brew-Beans/` subdirectory** — it is an outdated backup copy of the project. Always edit files at the repo root.
 
@@ -29,10 +30,14 @@ Bootstrap JS → jQuery 3.7.1 → AOS → Supabase JS client → `supabase-confi
 
 **Cart state** is persisted in `localStorage` (`brewBeansCart` key) with sanitization on read. The cart object stores items keyed by product id.
 
-**All database access goes through Supabase RPC functions** — no direct table queries from the browser:
-- `get_order_status(p_order_number, p_phone)` — customer-facing order lookup
-- `staff_list_orders(p_pin)` — returns orders for the staff dashboard
-- `staff_update_order_status(p_pin, p_order_number, p_new_status)` — staff status update
+**Critical writes go through Supabase Edge Functions** (TypeScript/Deno at `supabase/functions/*/index.ts`) for server-side validation. Read-only queries use RPCs.
+
+| Layer | Functions | Location |
+|-------|-----------|----------|
+| Edge Functions | `submit-order`, `update-order-status`, `create-payment` | `supabase/functions/*/index.ts` |
+| RPCs (read/admin) | `get_order_status`, `staff_list_orders`, `get_business_hours` | Supabase DB only |
+
+**Edge Functions** use the Supabase service-role key (`SUPABASE_SERVICE_ROLE_KEY` env) to bypass RLS. Deploy with: `supabase functions deploy <name>`.
 
 **Polling intervals**: staff dashboard polls every 15 s; order tracking polls every 10 s. Neither uses Supabase Realtime subscriptions.
 
@@ -61,4 +66,4 @@ All loaded via CDN, no local `node_modules`:
 
 ## Payment Gateways
 
-JazzCash and EasyPaisa are integrated via form redirects to their payment pages. Both domains are whitelisted in the CSP `form-action` directive in `vercel.json`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.
+JazzCash and EasyPaisa are integrated via form redirects to their payment pages. The `create-payment` Edge Function builds the gateway form fields server-side. Both domains are whitelisted in the CSP `form-action` directive in `vercel.json`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.

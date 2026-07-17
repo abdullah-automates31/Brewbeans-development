@@ -233,10 +233,12 @@ $(document).on('click', '.cancel-btn', async function () {
     if (!confirm(`Cancel order #${orderNumber}? This cannot be undone.`)) return;
     $(this).prop('disabled', true);
 
-    const { error } = await supabaseClient.rpc('staff_update_order_status', {
-        p_pin: staffPin,
-        p_order_number: orderNumber,
-        p_new_status: 'cancelled'
+    const { error } = await supabaseClient.functions.invoke('update-order-status', {
+        body: {
+            p_pin: staffPin,
+            p_order_number: orderNumber,
+            p_new_status: 'cancelled'
+        }
     });
 
     if (error) {
@@ -253,10 +255,12 @@ $(document).on('click', '.status-btn', async function () {
     const newStatus = $(this).data('status');
     $(this).prop('disabled', true);
 
-    const { error } = await supabaseClient.rpc('staff_update_order_status', {
-        p_pin: staffPin,
-        p_order_number: orderNumber,
-        p_new_status: newStatus
+    const { error } = await supabaseClient.functions.invoke('update-order-status', {
+        body: {
+            p_pin: staffPin,
+            p_order_number: orderNumber,
+            p_new_status: newStatus
+        }
     });
 
     if (error) {

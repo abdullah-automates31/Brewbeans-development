@@ -855,22 +855,23 @@ $(document).ready(function () {
                 .join(' | ');
             const fullNotes = [notes, addonSummary].filter(Boolean).join('\n');
 
-            const { data, error } = await supabaseClient.rpc('create_order', {
-                p_customer_name: fullName,
-                p_phone: phone,
-                p_email: email || null,
-                p_address: address,
-                p_lat: checkoutLatLng ? checkoutLatLng.lat : null,
-                p_lng: checkoutLatLng ? checkoutLatLng.lng : null,
-                p_notes: fullNotes || null,
-                p_payment_method: paymentMethod,
-                p_items: items,
-                p_delivery_charge: checkoutDeliveryCharge
+            const { data: order, error } = await supabaseClient.functions.invoke('submit-order', {
+                body: {
+                    p_customer_name: fullName,
+                    p_phone: phone,
+                    p_email: email || null,
+                    p_address: address,
+                    p_lat: checkoutLatLng ? checkoutLatLng.lat : null,
+                    p_lng: checkoutLatLng ? checkoutLatLng.lng : null,
+                    p_notes: fullNotes || null,
+                    p_payment_method: paymentMethod,
+                    p_items: items,
+                    p_delivery_charge: checkoutDeliveryCharge
+                }
             });
 
             if (error) throw error;
 
-            const order = Array.isArray(data) ? data[0] : data;
             const orderNumber = order.order_number;
             const total = order.total;
 
