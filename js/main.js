@@ -205,18 +205,32 @@ $(document).ready(function () {
         duration: 450,
         easing: 'ease-out-cubic',
         once: true,
-        offset: 60,
-        disable: function () {
-            return window.innerWidth < 768;
-        }
+        offset: 60
     });
 
     // ==========================================
     // MENU RENDERING
     // ==========================================
+
+    // Spring pop-in for menu cards as they scroll into view, staggered by column.
+    function animateMenuItemsIn() {
+        if (!window.Motion) {
+            $('#menuGrid .motion-pop').css('opacity', 1);
+            return;
+        }
+        Motion.inView('#menuGrid .motion-pop', (entry) => {
+            const target = entry.target;
+            const column = $(target).index();
+            Motion.animate(
+                target,
+                { opacity: [0, 1], scale: [0.85, 1], y: [30, 0] },
+                { duration: 0.5, delay: (column % 4) * 0.08, easing: [0.22, 1, 0.36, 1] }
+            );
+        }, { margin: '0px 0px -80px 0px' });
+    }
+
     function renderMenu(filter = 'all') {
         const $grid = $('#menuGrid');
-        $grid.empty();
 
         const q = ($('#menuSearchBar').val() || '').toLowerCase().trim();
         let filteredItems = filter === 'all' ? menuItems : menuItems.filter(item => item.category === filter);
@@ -224,48 +238,48 @@ $(document).ready(function () {
             item.name.toLowerCase().includes(q) || (item.description || '').toLowerCase().includes(q)
         );
 
-        if (!filteredItems.length) {
-            $grid.html('<div class="col-12 text-center py-5 text-muted"><i class="bi bi-search" style="font-size:2rem"></i><p class="mt-3">No items found for "<strong>' + $('<span>').text(q).html() + '</strong>"</p></div>');
-            return;
-        }
+        function populateGrid() {
+            $grid.empty();
 
-        filteredItems.forEach((item, index) => {
-            const aosDirection = index % 2 === 0 ? 'fade-right' : 'fade-left';
-            const aosDelay = (index % 4) * 75;
-            const html = `
-                <div class="col-12 col-md-6 col-lg-3" data-aos="${aosDirection}" data-aos-delay="${aosDelay}">
-                    <div class="menu-item" data-id="${item.id}">
-                        <div class="menu-item-img">
-                            <img src="${item.image}" alt="${item.name}" loading="lazy">
-                            <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
-                            ${item.is_popular ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
-                        </div>
-                        <div class="menu-item-content">
-                            <h3 class="menu-item-name">${item.name}</h3>
-                            <p class="menu-item-desc">${item.description}</p>
-                            <div class="menu-item-footer">
-                                <span class="menu-item-price">Rs. ${item.price}</span>
-                                <button class="btn-add-cart" data-id="${item.id}">
-                                    <i class="bi bi-plus-lg"></i> Add
-                                </button>
+            if (!filteredItems.length) {
+                $grid.html('<div class="col-12 text-center py-5 text-muted"><i class="bi bi-search" style="font-size:2rem"></i><p class="mt-3">No items found for "<strong>' + $('<span>').text(q).html() + '</strong>"</p></div>');
+                return;
+            }
+
+            filteredItems.forEach((item) => {
+                const html = `
+                    <div class="col-12 col-md-6 col-lg-3 motion-pop">
+                        <div class="menu-item" data-id="${item.id}">
+                            <div class="menu-item-img">
+                                <img src="${item.image}" alt="${item.name}" loading="lazy">
+                                <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
+                                ${item.is_popular ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
+                            </div>
+                            <div class="menu-item-content">
+                                <h3 class="menu-item-name">${item.name}</h3>
+                                <p class="menu-item-desc">${item.description}</p>
+                                <div class="menu-item-footer">
+                                    <span class="menu-item-price">Rs. ${item.price}</span>
+                                    <button class="btn-add-cart" data-id="${item.id}">
+                                        <i class="bi bi-plus-lg"></i> Add
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            $grid.append(html);
-        });
+                `;
+                $grid.append(html);
+            });
 
-        // AOS's mobile "disable" check only runs once, at AOS.init() time, on
-        // elements that already exist in the DOM. Menu items are injected here,
-        // after that point, so AOS never processes them on mobile — they'd be
-        // stuck permanently at opacity:0 with their data-aos attribute doing
-        // nothing but hiding them forever. Strip it manually on mobile so menu
-        // items are always visible; only let AOS animate them on larger screens.
-        if (window.innerWidth < 768) {
-            $grid.find('[data-aos]').removeAttr('data-aos').removeAttr('data-aos-delay');
-        } else if (typeof AOS !== 'undefined') {
-            AOS.refreshHard();
+            $grid.fadeTo(250, 1);
+            animateMenuItemsIn();
+        }
+
+        // Crossfade instead of an abrupt swap when switching filters
+        if ($grid.children().length) {
+            $grid.fadeTo(150, 0, populateGrid);
+        } else {
+            populateGrid();
         }
     }
 
@@ -363,6 +377,11 @@ $(document).ready(function () {
         menuItems = data;
         renderMenu();
         renderFanFavorites();
+        $('.category-card[data-category]').each(function () {
+            const category = $(this).data('category');
+            const count = menuItems.filter(item => item.category === category).length;
+            $(this).find('.category-count').text(`${count} Item${count === 1 ? '' : 's'}`);
+        });
     }
 
     loadMenuFromDB();
@@ -406,9 +425,13 @@ $(document).ready(function () {
     function updateCartBadge() {
         const totalItems = cart.reduce((sum, item) => sum + Math.max(0, Number(item.quantity)), 0);
         const $badge = $('#cartCount');
+        const previousCount = $badge.text();
         $badge.text(totalItems || 0);
         if (totalItems > 0) {
             $badge.addClass('show');
+            if (previousCount !== String(totalItems) && window.Motion) {
+                Motion.animate($badge[0], { scale: [1, 1.5, 1] }, { duration: 0.4, easing: [0.22, 1, 0.36, 1] });
+            }
         } else {
             $badge.removeClass('show');
         }
@@ -496,6 +519,9 @@ $(document).ready(function () {
         showToast(`${menuItem.name} added to cart!`);
         if ($btn) {
             $btn.addClass('added').html('<i class="bi bi-check-lg"></i> Added');
+            if (window.Motion) {
+                Motion.animate($btn[0], { scale: [1, 0.85, 1.08, 1] }, { duration: 0.4, easing: 'ease-out' });
+            }
             setTimeout(() => $btn.removeClass('added').html('<i class="bi bi-plus-lg"></i> Add'), 1500);
         }
     }

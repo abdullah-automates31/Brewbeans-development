@@ -36,7 +36,14 @@ $('#notifyBtn').on('click', async function () {
     $(this).html(notifyEnabled ? '<i class="bi bi-bell-fill me-1"></i>Notifying' : '<i class="bi bi-bell me-1"></i>Notify me');
 });
 
-function renderSteps(status) {
+function animateStepsIn() {
+    if (!window.Motion) return;
+    $('#trackingSteps').children().each(function (i, el) {
+        Motion.animate(el, { opacity: [0, 1], y: [16, 0], scale: [0.9, 1] }, { duration: 0.4, delay: i * 0.08, easing: [0.22, 1, 0.36, 1] });
+    });
+}
+
+function renderSteps(status, animateIn) {
     const $steps = $('#trackingSteps');
     $steps.empty();
 
@@ -47,6 +54,7 @@ function renderSteps(status) {
                 <div class="tracking-step-label">Order Cancelled</div>
             </div>
         `);
+        if (animateIn) animateStepsIn();
         return;
     }
 
@@ -62,6 +70,8 @@ function renderSteps(status) {
             </div>
         `);
     });
+
+    if (animateIn) animateStepsIn();
 }
 
 function paymentLabel(method, status) {
@@ -95,7 +105,9 @@ async function trackOrder(orderNumber, phone, silent) {
     currentOrderNumber = orderNumber;
     currentPhone = phone;
 
-    if (lastStatus && lastStatus !== order.status) {
+    const statusChanged = Boolean(lastStatus && lastStatus !== order.status);
+
+    if (statusChanged) {
         if (order.status === 'cancelled') {
             $('#trackError').removeClass('alert-warning alert-success').addClass('alert-danger')
                 .html('<strong>Order Cancelled</strong> — Your order has been cancelled. Please contact us for help.').show();
@@ -114,7 +126,8 @@ async function trackOrder(orderNumber, phone, silent) {
     }
     lastStatus = order.status;
 
-    renderSteps(order.status);
+    // Animate on fresh lookup or when status advances — not on every silent background poll.
+    renderSteps(order.status, !silent || statusChanged);
     $('#paymentBadge').text(paymentLabel(order.payment_method, order.payment_status));
 
     if (order.status === 'cancelled') {
@@ -145,10 +158,8 @@ async function trackOrder(orderNumber, phone, silent) {
     const $result = $('#trackResult');
     const wasHidden = $result.is(':hidden');
     $result.show();
-    if (wasHidden) {
-        $result.removeClass('reveal-card');
-        void $result[0].offsetWidth;
-        $result.addClass('reveal-card');
+    if (wasHidden && window.Motion) {
+        Motion.animate('#trackResult', { opacity: [0, 1], y: [16, 0] }, { duration: 0.4, easing: [0.22, 1, 0.36, 1] });
     }
 
     if (order.status === 'delivered' || order.status === 'cancelled') {
@@ -181,6 +192,12 @@ $('#trackForm').on('submit', function (e) {
 
 $(document).ready(function () {
     $('<style>').text('@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}.spin{animation:spin 1s linear infinite;display:inline-block}').appendTo('head');
+
+    if (window.Motion) {
+        Motion.animate('.tracking-card', { opacity: [0, 1], y: [24, 0] }, { duration: 0.5, easing: [0.22, 1, 0.36, 1] });
+    } else {
+        $('.tracking-card').css('opacity', 1);
+    }
 
     const params = new URLSearchParams(window.location.search);
     const order = params.get('order');

@@ -26,7 +26,9 @@ Bootstrap JS → jQuery 3.7.1 → AOS 2.3.4 → Supabase JS v2 → `supabase-con
 
 ## Key Patterns
 
-**Menu data** lives in `js/main.js` as a hardcoded `menuItems` array (16 products with id, name, category, description, price, image). Changes to the menu require editing this array.
+**Menu data** lives in `js/main.js` as a hardcoded `menuItems` array (16 products with id, name, category, description, price, image). Changes to the menu require editing this array. The `menu-seed.sql` file can reseed the `menu_items` DB table if needed.
+
+**Addon system** is entirely DB-driven (not hardcoded). Addon groups (`addon_groups`), options (`addons`), and their assignment to menu items (`menu_item_addon_groups`) are fetched live from Supabase. The `submit-order` Edge Function re-validates addon prices from the DB — client-side prices for addons are ignored.
 
 **Cart state** is persisted in `localStorage` (`brewBeansCart` key) with sanitization on read. The cart object stores items keyed by product id.
 
@@ -46,6 +48,33 @@ Bootstrap JS → jQuery 3.7.1 → AOS 2.3.4 → Supabase JS v2 → `supabase-con
 **Staff authentication** is PIN-based, verified server-side via RPC, and the PIN is cached in `sessionStorage`. The page is served with `X-Robots-Tag: noindex, nofollow`.
 
 **Phone number privacy**: the customer's phone is stored in `sessionStorage` under the key `bb_phone_${orderNumber}` so it never appears in the browser history URL when returning from a payment gateway redirect.
+
+**Order status flow**: `placed` → `preparing` → `out_for_delivery` → `delivered`. `cancelled` is reachable from any state. The `update-order-status` Edge Function enforces this enum; no other values are accepted.
+
+## Browser Storage Keys
+
+| Key | Storage | Purpose |
+|-----|---------|---------|
+| `brewBeansCart` | localStorage | Cart items keyed by product id; sanitized on read |
+| `brewBeansLastCustomer` | localStorage | Returning customer profile (name, phone, email, address, payment method, favorite items) |
+| `brewBeansLastOrder` | localStorage | `{ orderNumber, phone }` for quick re-tracking |
+| `brewBeansLocation` | localStorage | Cached `{ lat, lng }` from geolocation |
+| `bbStaffPin` | sessionStorage | Cached staff PIN; cleared on logout |
+| `bb_phone_${orderNumber}` | sessionStorage | Customer phone for tracking page; avoids exposing it in the URL |
+
+## Supabase Tables
+
+| Table | Purpose |
+|-------|---------|
+| `menu_items` | Products (id, name, category, description, price, image, is_available, is_popular) |
+| `addon_groups` | Addon groups (id, name, is_required) |
+| `addons` | Addon options (id, group_id, name, price, is_available) |
+| `menu_item_addon_groups` | Many-to-many join: menu items ↔ addon groups |
+| `orders` | Order header (order_number, customer info, lat/lng, payment method/status, subtotal, delivery_charge, total, status) |
+| `order_items` | Line items per order (menu_item_id, name snapshot, quantity, unit/total price) |
+| `order_item_addons` | Addon selections per line item (addon_name, addon_price snapshots) |
+| `staff_pins` | Staff PINs (name, pin 4–6 digits, is_active) |
+| `business_hours` | Open/close times per day of week, is_closed flag |
 
 ## CSS
 

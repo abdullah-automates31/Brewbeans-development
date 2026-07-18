@@ -78,16 +78,26 @@ $('#searchInput').on('input', function () { renderOrders(); });
 function showOrdersView(initialData) {
     $('#loginView').hide();
     $('#ordersView').show();
-    if (typeof AOS !== 'undefined') AOS.refresh();
+    if (window.Motion) {
+        Motion.animate('#ordersView', { opacity: [0, 1], y: [16, 0] }, { duration: 0.4, easing: [0.22, 1, 0.36, 1] });
+    }
     if (initialData !== undefined) {
         allOrders = initialData || [];
         knownOrderNumbers = new Set(allOrders.map(o => o.order_number));
-        renderOrders();
+        renderOrders('all');
     } else {
         loadOrders(true);
     }
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(() => loadOrders(false), 15000);
+}
+
+function animateLoginCardIn() {
+    if (window.Motion) {
+        Motion.animate('.staff-login-card', { opacity: [0, 1], y: [16, 0] }, { duration: 0.4, easing: [0.22, 1, 0.36, 1] });
+    } else {
+        $('.staff-login-card').css('opacity', 1);
+    }
 }
 
 function showLoginView(message) {
@@ -96,6 +106,7 @@ function showLoginView(message) {
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     $('#ordersView').hide();
     $('#loginView').show();
+    animateLoginCardIn();
     if (message) {
         $('#loginError').text(message).show();
     }
@@ -147,7 +158,10 @@ function matchesSearch(order, q) {
         || order.phone.toLowerCase().includes(q);
 }
 
-function renderOrders() {
+// animateOrderNumbers: 'all' pops in every rendered card (first load / manual
+// refresh); a Set pops in only those order numbers (freshly-arrived orders
+// during background polling); omitted means no animation (filter/search re-renders).
+function renderOrders(animateOrderNumbers) {
     const $list = $('#ordersList');
     $list.empty();
 
@@ -160,6 +174,8 @@ function renderOrders() {
     }
     $('#noOrders').hide();
 
+    const cardsToAnimate = [];
+
     orders.forEach((order, index) => {
         const itemsHtml = (order.items || [])
             .map(i => `${i.quantity}x ${escapeHtml(i.name)}`)
@@ -171,7 +187,7 @@ function renderOrders() {
             .join('');
 
         const $card = $(`
-            <div class="staff-order-card reveal-card" style="animation-delay: ${Math.min(index * 60, 480)}ms">
+            <div class="staff-order-card" data-order="${escapeHtml(order.order_number)}">
                 <div class="staff-order-header">
                     <div>
                         <strong>${escapeHtml(order.order_number)}</strong>
@@ -194,7 +210,17 @@ function renderOrders() {
             </div>
         `);
         $list.append($card);
+
+        const shouldAnimate = animateOrderNumbers === 'all'
+            || (animateOrderNumbers instanceof Set && animateOrderNumbers.has(order.order_number));
+        if (shouldAnimate) cardsToAnimate.push({ el: $card[0], index });
     });
+
+    if (window.Motion && cardsToAnimate.length) {
+        cardsToAnimate.forEach(({ el, index }) => {
+            Motion.animate(el, { opacity: [0, 1], y: [16, 0], scale: [0.96, 1] }, { duration: 0.4, delay: index * 0.05, easing: [0.22, 1, 0.36, 1] });
+        });
+    }
 }
 
 async function loadOrders(isInitial) {
@@ -215,9 +241,11 @@ async function loadOrders(isInitial) {
         return;
     }
 
+    const newOrderNumbers = new Set();
     if (!isInitial && knownOrderNumbers.size > 0) {
         (data || []).forEach(order => {
             if (!knownOrderNumbers.has(order.order_number)) {
+                newOrderNumbers.add(order.order_number);
                 notifyNewOrder(order);
             }
         });
@@ -225,7 +253,7 @@ async function loadOrders(isInitial) {
     knownOrderNumbers = new Set((data || []).map(o => o.order_number));
 
     allOrders = data || [];
-    renderOrders();
+    renderOrders(isInitial ? 'all' : newOrderNumbers);
 }
 
 $(document).on('click', '.cancel-btn', async function () {
@@ -272,5 +300,7 @@ $(document).on('click', '.status-btn', async function () {
 $(document).ready(function () {
     if (staffPin) {
         verifyAndEnter(staffPin).catch(() => showLoginView());
+    } else {
+        animateLoginCardIn();
     }
 });
