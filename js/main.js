@@ -169,7 +169,7 @@ $(document).ready(function () {
         if (target.length) {
             $('html, body').animate({
                 scrollTop: target.offset().top - NAV_SCROLL_OFFSET
-            }, 650, 'swing');
+            }, 300, 'swing');
         }
 
         // Close mobile menu using Bootstrap's API properly
@@ -787,7 +787,7 @@ $(document).ready(function () {
         $('#cartSidebar').removeClass('open');
         $('#cartOverlay').removeClass('show');
         $('body').css('overflow', '');
-        $('html, body').animate({ scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET }, 600);
+        $('html, body').animate({ scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET }, 300);
     });
 
     // ==========================================
