@@ -1245,10 +1245,25 @@ $(document).ready(function () {
 
     const trackOrderModal = new bootstrap.Modal(document.getElementById('trackOrderModal'));
 
-    // Show Track Order button only if customer has a previous order
-    if (safeReadLocalStorage('brewBeansLastOrder')) {
-        document.getElementById('trackOrderNavItem').style.display = '';
-    }
+    // Show Track Order button only if customer has an active (non-delivered, non-cancelled) order
+    (async function checkLastOrder() {
+        const last = safeReadLocalStorage('brewBeansLastOrder');
+        if (!last || !last.orderNumber || !last.phone) return;
+        try {
+            const { data } = await supabaseClient.rpc('get_order_status', {
+                p_order_number: last.orderNumber,
+                p_phone: last.phone
+            });
+            const order = Array.isArray(data) ? data[0] : data;
+            if (!order || order.status === 'delivered' || order.status === 'cancelled') {
+                localStorage.removeItem('brewBeansLastOrder');
+            } else {
+                document.getElementById('trackOrderNavItem').style.display = '';
+            }
+        } catch (e) {
+            document.getElementById('trackOrderNavItem').style.display = '';
+        }
+    })();
 
     $('#trackOrderNavBtn').on('click', function () {
         // Pre-fill from last order if saved
