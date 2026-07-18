@@ -8,31 +8,38 @@ Brew Beans is a static coffee shop website with a Supabase backend. There is no 
 
 ## Architecture
 
-Three pages, each with a corresponding JS file:
-
 | Page | JS | Purpose |
 |---|---|---|
-| `index.html` | `js/main.js` | Customer-facing: menu, cart, ordering, geolocation |
-| `order-tracking.html` | `js/order-tracking.js` | Real-time order status with polling and browser notifications |
-| `staff.html` | `js/staff.js` | PIN-protected staff dashboard for order management |
+| `index.html` | `js/main.js` | Customer-facing: menu (`menuItems` array), cart, ordering, geolocation |
+| `order-tracking.html` | `js/order-tracking.js` | Order status polling (10 s) + browser notifications |
+| `staff.html` | `js/staff.js` | PIN-protected staff dashboard, polls 15 s |
+| `admin.html` | inline script | Supabase Auth email/password login page |
+| `admin-dashboard.html` | `js/admin-dashboard.js` | Full admin UI (Supabase Auth session) |
+| `privacy-policy.html`, `terms.html` | none | Static legal pages |
 
-**Shared across all pages**: `js/supabase-config.js` (initializes global `supabaseClient`) and `js/scroll-fx.js` (AOS init + scroll progress bar).
+**Shared**: `js/supabase-config.js` (global `supabaseClient`) and `js/scroll-fx.js` (AOS init + scroll progress bar) on **all pages except `index.html`** (index skips `scroll-fx.js`; AOS is inited inside `main.js`).
 
-**Script load order within each page** (order matters — no bundler):
-Bootstrap JS → jQuery 3.7.1 → AOS → Supabase JS client → `supabase-config.js` → page-specific JS → `scroll-fx.js`
+**Script load order** (no bundler — order matters):
+Bootstrap JS → jQuery 3.7.1 → AOS 2.3.4 → Supabase JS v2 → `supabase-config.js` → page-specific JS → [`scroll-fx.js`]
 
 **Ignore the nested `Brew-Beans/` subdirectory** — it is an outdated backup copy of the project. Always edit files at the repo root.
 
 ## Key Patterns
 
-**Menu data** lives in `js/main.js` as a hardcoded `menuItems` array (16 products with id, name, category, description, price, image). Changes to the menu require editing this array.
+**Menu data** lives in `js/main.js` as a hardcoded `menuItems` array (16 products with id, name, category, description, price, image). Changes to the menu require editing this array. The `menu-seed.sql` file can reseed the `menu_items` DB table if needed.
+
+**Addon system** is entirely DB-driven (not hardcoded). Addon groups (`addon_groups`), options (`addons`), and their assignment to menu items (`menu_item_addon_groups`) are fetched live from Supabase. The `submit-order` Edge Function re-validates addon prices from the DB — client-side prices for addons are ignored.
 
 **Cart state** is persisted in `localStorage` (`brewBeansCart` key) with sanitization on read. The cart object stores items keyed by product id.
 
-**All database access goes through Supabase RPC functions** — no direct table queries from the browser:
-- `get_order_status(p_order_number, p_phone)` — customer-facing order lookup
-- `staff_list_orders(p_pin)` — returns orders for the staff dashboard
-- `staff_update_order_status(p_pin, p_order_number, p_new_status)` — staff status update
+**Critical writes go through Supabase Edge Functions** (TypeScript/Deno at `supabase/functions/*/index.ts`) for server-side validation. Read-only queries use RPCs.
+
+| Layer | Functions | Location |
+|-------|-----------|----------|
+| Edge Functions | `submit-order`, `update-order-status`, `create-payment` | `supabase/functions/*/index.ts` |
+| RPCs (read/admin) | `get_order_status`, `staff_list_orders`, `get_business_hours` | Supabase DB only |
+
+**Edge Functions** use the Supabase service-role key (`SUPABASE_SERVICE_ROLE_KEY` env) to bypass RLS. Deploy with: `supabase functions deploy <name>`.
 
 **Polling intervals**: staff dashboard polls every 15 s; order tracking polls every 10 s. Neither uses Supabase Realtime subscriptions.
 
@@ -41,6 +48,33 @@ Bootstrap JS → jQuery 3.7.1 → AOS → Supabase JS client → `supabase-confi
 **Staff authentication** is PIN-based, verified server-side via RPC, and the PIN is cached in `sessionStorage`. The page is served with `X-Robots-Tag: noindex, nofollow`.
 
 **Phone number privacy**: the customer's phone is stored in `sessionStorage` under the key `bb_phone_${orderNumber}` so it never appears in the browser history URL when returning from a payment gateway redirect.
+
+**Order status flow**: `placed` → `preparing` → `out_for_delivery` → `delivered`. `cancelled` is reachable from any state. The `update-order-status` Edge Function enforces this enum; no other values are accepted.
+
+## Browser Storage Keys
+
+| Key | Storage | Purpose |
+|-----|---------|---------|
+| `brewBeansCart` | localStorage | Cart items keyed by product id; sanitized on read |
+| `brewBeansLastCustomer` | localStorage | Returning customer profile (name, phone, email, address, payment method, favorite items) |
+| `brewBeansLastOrder` | localStorage | `{ orderNumber, phone }` for quick re-tracking |
+| `brewBeansLocation` | localStorage | Cached `{ lat, lng }` from geolocation |
+| `bbStaffPin` | sessionStorage | Cached staff PIN; cleared on logout |
+| `bb_phone_${orderNumber}` | sessionStorage | Customer phone for tracking page; avoids exposing it in the URL |
+
+## Supabase Tables
+
+| Table | Purpose |
+|-------|---------|
+| `menu_items` | Products (id, name, category, description, price, image, is_available, is_popular) |
+| `addon_groups` | Addon groups (id, name, is_required) |
+| `addons` | Addon options (id, group_id, name, price, is_available) |
+| `menu_item_addon_groups` | Many-to-many join: menu items ↔ addon groups |
+| `orders` | Order header (order_number, customer info, lat/lng, payment method/status, subtotal, delivery_charge, total, status) |
+| `order_items` | Line items per order (menu_item_id, name snapshot, quantity, unit/total price) |
+| `order_item_addons` | Addon selections per line item (addon_name, addon_price snapshots) |
+| `staff_pins` | Staff PINs (name, pin 4–6 digits, is_active) |
+| `business_hours` | Open/close times per day of week, is_closed flag |
 
 ## CSS
 
@@ -61,4 +95,4 @@ All loaded via CDN, no local `node_modules`:
 
 ## Payment Gateways
 
-JazzCash and EasyPaisa are integrated via form redirects to their payment pages. Both domains are whitelisted in the CSP `form-action` directive in `vercel.json`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.
+JazzCash and EasyPaisa are integrated via form redirects to their payment pages. The `create-payment` Edge Function builds the gateway form fields server-side. Both domains are whitelisted in the CSP `form-action` directive in `vercel.json`. The return URL lands on `order-tracking.html` with a `?payment=success|failed` query param.
