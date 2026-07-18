@@ -536,10 +536,10 @@ $(document).ready(function () {
                         ${addonHtml}
                         <div class="cart-item-price">Rs. ${itemTotal}</div>
                         <div class="cart-item-actions">
-                            <button class="cart-qty-btn qty-minus"><i class="bi bi-dash"></i></button>
+                            <button class="cart-qty-btn qty-minus" data-cart-key="${item.cartKey}"><i class="bi bi-dash"></i></button>
                             <span class="cart-qty">${item.quantity}</span>
-                            <button class="cart-qty-btn qty-plus"><i class="bi bi-plus"></i></button>
-                            <button class="cart-item-remove"><i class="bi bi-trash"></i></button>
+                            <button class="cart-qty-btn qty-plus" data-cart-key="${item.cartKey}"><i class="bi bi-plus"></i></button>
+                            <button class="cart-item-remove" data-cart-key="${item.cartKey}"><i class="bi bi-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -746,7 +746,7 @@ $(document).ready(function () {
 
     // Cart quantity controls
     $(document).on('click', '.qty-minus', function () {
-        const cartKey = $(this).closest('.cart-item').data('cart-key');
+        const cartKey = $(this).attr('data-cart-key');
         const cartItem = cart.find(item => item.cartKey === cartKey);
         if (cartItem && cartItem.quantity > 1) {
             cartItem.quantity--;
@@ -755,7 +755,7 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '.qty-plus', function () {
-        const cartKey = $(this).closest('.cart-item').data('cart-key');
+        const cartKey = $(this).attr('data-cart-key');
         const cartItem = cart.find(item => item.cartKey === cartKey);
         if (cartItem) {
             cartItem.quantity++;
@@ -764,7 +764,7 @@ $(document).ready(function () {
     });
 
     $(document).on('click', '.cart-item-remove', function () {
-        const cartKey = $(this).closest('.cart-item').data('cart-key');
+        const cartKey = $(this).attr('data-cart-key');
         cart = cart.filter(item => item.cartKey !== cartKey);
         updateCart();
         showToast('Item removed from cart');
