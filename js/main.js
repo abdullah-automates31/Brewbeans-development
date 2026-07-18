@@ -165,11 +165,10 @@ $(document).ready(function () {
         if (!$(this).hasClass('nav-link')) return;
 
         e.preventDefault();
-        const target = $(this.getAttribute('href'));
-        if (target.length) {
-            $('html, body').animate({
-                scrollTop: target.offset().top - NAV_SCROLL_OFFSET
-            }, 300, 'swing');
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            const y = target.getBoundingClientRect().top + window.scrollY - NAV_SCROLL_OFFSET;
+            window.scrollTo({ top: y, behavior: 'smooth' });
         }
 
         // Close mobile menu using Bootstrap's API properly
@@ -471,9 +470,8 @@ $(document).ready(function () {
         $('.filter-btn').removeClass('active');
         $(`.filter-btn[data-filter="${category}"]`).addClass('active');
         renderMenu(category);
-        $('html, body').animate({
-            scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET
-        }, 650);
+        const menuEl = document.getElementById('menu');
+        if (menuEl) window.scrollTo({ top: menuEl.getBoundingClientRect().top + window.scrollY - NAV_SCROLL_OFFSET, behavior: 'smooth' });
     });
 
     // ==========================================
@@ -787,7 +785,8 @@ $(document).ready(function () {
         $('#cartSidebar').removeClass('open');
         $('#cartOverlay').removeClass('show');
         $('body').css('overflow', '');
-        $('html, body').animate({ scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET }, 300);
+        const menuEl2 = document.getElementById('menu');
+        if (menuEl2) window.scrollTo({ top: menuEl2.getBoundingClientRect().top + window.scrollY - NAV_SCROLL_OFFSET, behavior: 'smooth' });
     });
 
     // ==========================================
