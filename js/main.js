@@ -12,6 +12,14 @@ $(document).ready(function () {
     let menuItems = [];
     const POPULAR_ITEMS = ['Royal Beans Spanish Latte', 'Lotus Frappe', 'Caramel Rush Brew', 'Chocolate Chip Cookies'];
     const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
+
+    // Badge labels shown on menu card top-right. Add/edit item names here to change badges.
+    const BADGE_MAP = {
+        'Lotus Frappe':               { label: '🔥 Best Seller',    cls: 'badge-bestseller' },
+        'Royal Beans Spanish Latte':  { label: '⭐ Fan Favorite',   cls: 'badge-popular'    },
+        'Caramel Rush Brew':          { label: '📈 Trending',       cls: 'badge-trending'   },
+        'Chocolate Chip Cookies':     { label: '🧒 Kids Favourite', cls: 'badge-kids'       },
+    };
     const FOOD_CATS     = ['desserts', 'sandwiches'];
 
     // Shop coordinates (Gulshan-e-Iqbal, Karachi)
@@ -310,13 +318,17 @@ $(document).ready(function () {
             }
 
             filteredItems.forEach((item) => {
+                const _b = BADGE_MAP[item.name];
+                const badgeHtml = _b
+                    ? `<span class="menu-item-tag ${_b.cls}">${_b.label}</span>`
+                    : item.is_popular ? '<span class="menu-item-tag badge-popular">⭐ Popular</span>' : '';
                 const html = `
                     <div class="col-12 col-md-6 col-lg-3 motion-pop">
                         <div class="menu-item" data-id="${item.id}">
                             <div class="menu-item-img">
                                 <img src="${item.image}" alt="${item.name}" loading="lazy">
                                 <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
-                                ${item.is_popular ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
+                                ${badgeHtml}
                             </div>
                             <div class="menu-item-content">
                                 <h3 class="menu-item-name">${item.name}</h3>

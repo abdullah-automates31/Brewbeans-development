@@ -1403,7 +1403,13 @@ html.bb-no-splash #loading-screen {
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.75rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 72px;
+    z-index: 200;
+    background: var(--light);
+    padding: 0.75rem 0.25rem;
+    box-shadow: 0 3px 12px rgba(15,61,46,0.07);
 }
 
 .filter-btn {
@@ -2510,12 +2516,21 @@ html.bb-no-splash #loading-screen {
 
 @media (max-width: 767.98px) {
     .menu-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
         gap: 0.5rem;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
+    .menu-filters::-webkit-scrollbar { display: none; }
 
     .filter-btn {
         padding: 0.5rem 1rem;
         font-size: 0.8rem;
+        flex-shrink: 0;
     }
 
     .footer-bottom-links {
@@ -3237,20 +3252,55 @@ textarea:focus-visible {
 }
 
 /* ============================================
-   POPULAR BADGE ON MENU CARDS
+   MENU CARD BADGES (top-right corner)
    ============================================ */
-.menu-item-popular {
+.menu-item-tag {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: linear-gradient(135deg, #d97706, #f59e0b);
     color: #fff;
     padding: 0.3rem 0.65rem;
     border-radius: 20px;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+/* Fan Favorite / Popular — gold */
+.badge-popular {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
     box-shadow: 0 2px 8px rgba(217,119,6,0.4);
+}
+
+/* Best Seller — red-orange */
+.badge-bestseller {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    box-shadow: 0 2px 8px rgba(220,38,38,0.4);
+}
+
+/* Trending — purple */
+.badge-trending {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+}
+
+/* Kids Favourite — teal */
+.badge-kids {
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    box-shadow: 0 2px 8px rgba(8,145,178,0.4);
+}
+
+/* New Arrival — green */
+.badge-new {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    box-shadow: 0 2px 8px rgba(22,163,74,0.4);
+}
+
+/* Hot Selling — deep orange */
+.badge-hot {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    box-shadow: 0 2px 8px rgba(234,88,12,0.4);
 }
 
 /* ============================================
