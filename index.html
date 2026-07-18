@@ -42,6 +42,10 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://images.unsplash.com">
 
+    <!-- Hero background is the LCP element on this page — preload it -->
+    <link rel="preload" as="image" href="img/bg.png" fetchpriority="high">
+    <link rel="preload" as="image" href="img/brewbeans-logo.png" fetchpriority="high">
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 
@@ -132,39 +136,59 @@
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
-        <div class="container">
+        <div class="nav-shell">
+            <div class="nav-side nav-side-left">
+                <button type="button" class="nav-info-card nav-info-location" id="navLocationCard">
+                    <span class="nav-info-icon"><i class="bi bi-geo-alt-fill"></i></span>
+                    <span class="nav-info-text">
+                        <span class="nav-info-label">Delivery</span>
+                        <span class="nav-info-value">Karachi, Pakistan</span>
+                    </span>
+                    <i class="bi bi-chevron-down nav-info-caret"></i>
+                </button>
+                <a href="tel:+923112463092" class="nav-info-card nav-info-phone">
+                    <span class="nav-info-icon"><i class="bi bi-telephone-fill"></i></span>
+                    <span class="nav-info-value">+92 311 2463092</span>
+                </a>
+            </div>
+
             <a class="navbar-brand" href="#home">
-                <img src="img/brewbeans-logo.png" alt="Brew Beans Coffee Bar" class="brand-logo">
+                <img src="img/brewbeans-logo.png" alt="Brew Beans Coffee Bar" class="brand-logo" width="872" height="439">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-                    <li class="nav-item ms-lg-2" id="trackOrderNavItem" style="display:none">
-                        <button class="btn-track-nav" id="trackOrderNavBtn">
-                            <i class="bi bi-truck"></i> Track Order
-                        </button>
-                    </li>
-                    <li class="nav-item ms-lg-2" id="shopBanner" style="display:none;">
-                        <span id="shopBannerInner" style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.18rem 0.6rem;border-radius:999px;font-family:'Poppins',sans-serif;font-size:0.7rem;font-weight:500;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);">
-                            <span id="shopBannerDot" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;"></span>
-                            <span id="shopBannerText" style="color:rgba(255,255,255,0.9);"></span>
+
+            <div class="nav-side nav-side-right">
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav align-items-lg-center">
+                        <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#menu">Menu</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#reviews">Reviews</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                        <li class="nav-item ms-lg-2" id="trackOrderNavItem" style="display:none">
+                            <button class="btn-track-nav" id="trackOrderNavBtn">
+                                <i class="bi bi-truck"></i> Track Order
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="nav-actions">
+                    <span id="shopBanner" style="display:none;">
+                        <span id="shopBannerInner" class="shop-banner-pill">
+                            <span id="shopBannerDot" class="shop-banner-dot"></span>
+                            <span id="shopBannerText" class="shop-banner-text"></span>
                         </span>
-                    </li>
-                    <li class="nav-item ms-lg-3">
-                        <button class="btn btn-cart" id="cartToggle">
-                            <i class="bi bi-bag"></i>
-                            <span class="cart-badge" id="cartCount">0</span>
-                        </button>
-                    </li>
-                </ul>
+                    </span>
+                    <button class="btn btn-cart" id="cartToggle">
+                        <i class="bi bi-bag"></i>
+                        <span class="cart-badge" id="cartCount">0</span>
+                    </button>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="hamburger-bar"></span>
+                        <span class="hamburger-bar"></span>
+                        <span class="hamburger-bar"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -209,47 +233,45 @@
 
     <!-- Hero Section -->
     <section class="hero" id="home">
-        <div class="hero-bg">
+        <div class="hero-frame">
+            <div class="hero-bg"></div>
             <div class="hero-overlay"></div>
-        </div>
-        <div class="hero-content">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-10 text-center" data-aos="fade-up" data-aos-duration="1200">
-                        <span class="hero-badge">
-                            <i class="bi bi-star-fill me-1"></i>Premium Artisan Coffee
-                        </span>
-                        <h1 class="hero-title">Freshly Brewed Happiness<br>in Every Cup</h1>
-                        <p class="hero-subtitle">Experience handcrafted coffee, premium desserts, and unforgettable moments in the heart of Karachi.</p>
-                        <div class="hero-buttons">
-                            <a href="#menu" class="btn btn-primary btn-lg me-3">
-                                <i class="bi bi-cup-hot me-2"></i>Order Now
-                            </a>
-                            <a href="#menu" class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-journal-text me-2"></i>View Menu
-                            </a>
+            <div class="hero-content">
+                <div class="hero-inner" data-aos="fade-up" data-aos-duration="1200">
+                    <span class="hero-badge">
+                        <i class="bi bi-star-fill me-1"></i>Premium Artisan Coffee
+                    </span>
+                    <h1 class="hero-title">Freshly Brewed Happiness<br>in Every <span class="hero-title-accent">Cup</span></h1>
+                    <p class="hero-subtitle">Experience handcrafted coffee, premium desserts, and unforgettable moments in the heart of Karachi.</p>
+                    <div class="hero-buttons">
+                        <a href="#menu" class="btn btn-primary btn-lg me-3">
+                            <i class="bi bi-cup-hot me-2"></i>Order Now
+                        </a>
+                        <a href="#menu" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-journal-text me-2"></i>View Menu
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-item" data-aos="fade-up" data-aos-delay="200">
+                            <span class="stat-icon"><i class="bi bi-people-fill"></i></span>
+                            <span class="stat-text">
+                                <span class="stat-number">15K+</span>
+                                <span class="stat-label">Happy Customers</span>
+                            </span>
                         </div>
-                        <div class="hero-stats mt-5">
-                            <div class="row g-4">
-                                <div class="col-4" data-aos="fade-up" data-aos-delay="200">
-                                    <div class="stat-item">
-                                        <span class="stat-number">15K+</span>
-                                        <span class="stat-label">Happy Customers</span>
-                                    </div>
-                                </div>
-                                <div class="col-4" data-aos="fade-up" data-aos-delay="300">
-                                    <div class="stat-item">
-                                        <span class="stat-number">50+</span>
-                                        <span class="stat-label">Coffee Varieties</span>
-                                    </div>
-                                </div>
-                                <div class="col-4" data-aos="fade-up" data-aos-delay="400">
-                                    <div class="stat-item">
-                                        <span class="stat-number">4.9</span>
-                                        <span class="stat-label">Average Rating</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="stat-item" data-aos="fade-up" data-aos-delay="300">
+                            <span class="stat-icon"><i class="bi bi-cup-hot-fill"></i></span>
+                            <span class="stat-text">
+                                <span class="stat-number">50+</span>
+                                <span class="stat-label">Coffee Varieties</span>
+                            </span>
+                        </div>
+                        <div class="stat-item" data-aos="fade-up" data-aos-delay="400">
+                            <span class="stat-icon"><i class="bi bi-star-fill"></i></span>
+                            <span class="stat-text">
+                                <span class="stat-number">4.9</span>
+                                <span class="stat-label">Average Rating</span>
+                            </span>
                         </div>
                     </div>
                 </div>

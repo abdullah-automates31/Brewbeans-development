@@ -18,6 +18,11 @@ $(document).ready(function () {
     const SHOP_LAT = 24.9180;
     const SHOP_LNG = 67.0971;
 
+    // Fixed floating navbar's rendered height + a little breathing
+    // room, used to offset every anchor-scroll so sections don't land
+    // partially hidden behind it.
+    const NAV_SCROLL_OFFSET = 110;
+
     function sanitizeCartData(storedCart) {
         if (!Array.isArray(storedCart)) return [];
         return storedCart
@@ -116,15 +121,31 @@ $(document).ready(function () {
     });
 
     // ==========================================
-    // NAVBAR SCROLL EFFECT
+    // NAVBAR SCROLL EFFECT + HERO PARALLAX
+    // Combined into one rAF-throttled listener (instead of two
+    // separate scroll handlers) so scroll-driven work is batched to
+    // once per frame and only touches transform/class — no layout
+    // reads mixed with writes.
     // ==========================================
-    $(window).on('scroll', function () {
-        if ($(window).scrollTop() > 50) {
-            $('#mainNav').addClass('scrolled');
-        } else {
-            $('#mainNav').removeClass('scrolled');
+    (function () {
+        const $mainNav = $('#mainNav');
+        const $heroBg = $('.hero-bg');
+        let ticking = false;
+
+        function onScrollFrame() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            $mainNav.toggleClass('scrolled', scrollTop > 50);
+            $heroBg.css('transform', `translateY(${scrollTop * 0.3}px)`);
+            ticking = false;
         }
-    });
+
+        $(window).on('scroll', function () {
+            if (!ticking) {
+                requestAnimationFrame(onScrollFrame);
+                ticking = true;
+            }
+        });
+    })();
 
     // // Smooth scrolling for nav links
     // $('a[href^="#"]').on('click', function(e) {
@@ -147,8 +168,8 @@ $(document).ready(function () {
         const target = $(this.getAttribute('href'));
         if (target.length) {
             $('html, body').animate({
-                scrollTop: target.offset().top - 70
-            }, 800, 'swing');
+                scrollTop: target.offset().top - NAV_SCROLL_OFFSET
+            }, 650, 'swing');
         }
 
         // Close mobile menu using Bootstrap's API properly
@@ -162,6 +183,49 @@ $(document).ready(function () {
             }
         }
     });
+
+    // ==========================================
+    // MOBILE MENU: scroll lock, tap-outside-to-close, ESC-to-close
+    // ==========================================
+    (function () {
+        const $navbarNav = $('#navbarNav');
+        const navbarNavEl = document.getElementById('navbarNav');
+        if (!navbarNavEl) return;
+
+        // Bootstrap's collapse height/opacity transition is already
+        // handled in CSS — this just locks page scroll for as long as
+        // the panel is open, and unlocks it the moment it starts closing
+        // (not after, so there's no perceived delay/jank). Padding the
+        // scrollbar's own width back in keeps the page from jumping
+        // sideways when it disappears.
+        navbarNavEl.addEventListener('show.bs.collapse', function () {
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            document.body.style.paddingRight = scrollbarWidth > 0 ? scrollbarWidth + 'px' : '';
+            // Locked on both html and body: which element actually
+            // scrolls the page is spec-defined and browser-dependent,
+            // so covering both is the only reliable way to stop it.
+            $('html, body').addClass('mobile-nav-open');
+        });
+        navbarNavEl.addEventListener('hide.bs.collapse', function () {
+            $('html, body').removeClass('mobile-nav-open');
+            document.body.style.paddingRight = '';
+        });
+
+        $(document).on('click', function (e) {
+            if (!$navbarNav.hasClass('show')) return;
+            const $target = $(e.target);
+            if ($target.closest('#navbarNav').length || $target.closest('.navbar-toggler').length) return;
+            const bsCollapse = bootstrap.Collapse.getInstance(navbarNavEl);
+            if (bsCollapse) bsCollapse.hide(); else $navbarNav.collapse('hide');
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape' && $navbarNav.hasClass('show')) {
+                const bsCollapse = bootstrap.Collapse.getInstance(navbarNavEl);
+                if (bsCollapse) bsCollapse.hide(); else $navbarNav.collapse('hide');
+            }
+        });
+    })();
 
     // // Active nav link on scroll
     // $(window).on('scroll', function () {
@@ -181,7 +245,7 @@ $(document).ready(function () {
 
     // Active nav link on scroll
     $(window).on('scroll', function () {
-        const scrollPos = $(window).scrollTop() + 100;
+        const scrollPos = $(window).scrollTop() + NAV_SCROLL_OFFSET + 20;
         $('.nav-link').each(function () {
             const href = $(this).attr('href');
             if (!href || !href.startsWith('#')) return;
@@ -389,8 +453,8 @@ $(document).ready(function () {
         $(`.filter-btn[data-filter="${category}"]`).addClass('active');
         renderMenu(category);
         $('html, body').animate({
-            scrollTop: $('#menu').offset().top - 80
-        }, 800);
+            scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET
+        }, 650);
     });
 
     // ==========================================
@@ -697,7 +761,7 @@ $(document).ready(function () {
         $('#cartSidebar').removeClass('open');
         $('#cartOverlay').removeClass('show');
         $('body').css('overflow', '');
-        $('html, body').animate({ scrollTop: $('#menu').offset().top - 80 }, 600);
+        $('html, body').animate({ scrollTop: $('#menu').offset().top - NAV_SCROLL_OFFSET }, 600);
     });
 
     // ==========================================
@@ -1313,14 +1377,6 @@ $(document).ready(function () {
             }
         `)
         .appendTo('head');
-
-    // ==========================================
-    // PARALLAX EFFECT (subtle)
-    // ==========================================
-    $(window).on('scroll', function () {
-        const scrolled = $(window).scrollTop();
-        $('.hero-bg').css('transform', `translateY(${scrolled * 0.3}px)`);
-    });
 
     // ==========================================
     // COUNTER ANIMATION

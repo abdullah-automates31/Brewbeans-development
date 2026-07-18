@@ -59,6 +59,14 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Locks background scroll while the mobile nav panel is open. Applied
+   to both html and body since the browser-designated "scrolling
+   element" varies. */
+html.mobile-nav-open,
+body.mobile-nav-open {
+    overflow: hidden;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -248,44 +256,159 @@ html.bb-no-splash #loading-screen {
 /* ============================================
    NAVIGATION
    ============================================ */
+/* Flat, edge-to-edge bar sitting flush against the top of the
+   viewport — no floating "pill" margin/shadow around it. */
 #mainNav {
-    padding: 1.5rem 0;
-    transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent;
+    padding: 0;
+    background: var(--accent);
+    box-shadow: 0 2px 12px rgba(15, 61, 46, 0.08);
+    transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1030;
 }
 
+.nav-shell {
+    position: relative;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    background: transparent;
+    padding: 1rem 1.5rem;
+    display: grid;
+    /* "auto" center column sizes itself to the logo's real rendered
+       width, so it never crops it — the equal 1fr outer tracks are
+       what keep the logo mathematically centered regardless of the
+       two side groups being different widths (two info cards vs. six
+       links + status pill + cart). */
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    transition: var(--transition);
+}
+
 #mainNav.scrolled {
-    background: rgba(15, 61, 46, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 0.25rem 0;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(15, 61, 46, 0.14);
 }
 
-#mainNav.scrolled .navbar-brand {
-    font-size: 1.25rem;
+.nav-side {
+    display: flex;
+    align-items: center;
 }
 
-#mainNav.scrolled .brand-logo {
-    height: 44px;
+.nav-side-left {
+    grid-column: 1;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+.nav-side-right {
+    grid-column: 3;
+    justify-content: flex-end;
+    gap: 0.4rem;
+}
+
+/* Delivery / phone info cards */
+.nav-info-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--border-light);
+    border: none;
+    border-radius: 100px;
+    padding: 0.35rem 0.8rem 0.35rem 0.35rem;
+    cursor: pointer;
+    text-align: left;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.nav-info-card:hover {
+    background: #ECEBE7;
+}
+
+.nav-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--accent);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.nav-info-phone .nav-info-icon {
+    background: var(--secondary);
+}
+
+.nav-info-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.nav-info-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.nav-info-value {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+.nav-info-phone .nav-info-value {
+    font-size: 0.85rem;
+}
+
+.nav-info-caret {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: 0.15rem;
 }
 
 .navbar-brand {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--accent) !important;
+    color: var(--primary) !important;
+}
+
+#mainNav .navbar-brand {
+    grid-column: 2;
 }
 
 .brand-logo {
-    height: 48px;
+    height: 58px;
     width: auto;
+    /* Never let the logo be cropped/hidden — the box only ever grows
+       to fit it (grid-template-columns: ... auto ... above), so
+       object-fit isn't needed here; this just guards against any
+       ancestor accidentally constraining it. */
+    max-width: none;
     transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The logo artwork itself is off-white/cream on a transparent
+   background — correct on the brand's dark green (footer, hero image)
+   but nearly invisible directly on this white bar. brightness(0)
+   recolors only the rendered pixels to solid dark, keeping the same
+   transparent background and exact silhouette — no chip, no redraw. */
+#mainNav .brand-logo {
+    filter: brightness(0);
+    opacity: 0.88;
+}
+
+#mainNav.scrolled .brand-logo {
+    height: 46px;
 }
 
 .brand-text {
@@ -301,11 +424,22 @@ html.bb-no-splash #loading-screen {
     color: var(--secondary-light);
 }
 
+.navbar-collapse {
+    display: flex;
+    align-items: center;
+    /* Deliberately NOT min-width:0 — letting this shrink below its
+       content's natural width just makes it under-report its own
+       size while the (non-wrapping) links inside still overflow past
+       that box, which then overlaps whatever sits next to it. Its
+       true width is what nav-side-right needs to actually reserve. */
+}
+
 .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important;
+    color: var(--text-medium) !important;
     font-weight: 500;
-    font-size: 0.95rem;
-    padding: 0.5rem 1rem !important;
+    font-size: 0.88rem;
+    padding: 0.5rem 0.45rem !important;
+    white-space: nowrap;
     position: relative;
     transition: var(--transition);
 }
@@ -317,7 +451,7 @@ html.bb-no-splash #loading-screen {
     left: 50%;
     width: 0;
     height: 2px;
-    background: var(--secondary-light);
+    background: var(--secondary);
     transition: var(--transition);
     transform: translateX(-50%);
 }
@@ -329,12 +463,49 @@ html.bb-no-splash #loading-screen {
 
 .nav-link:hover,
 .nav-link.active {
-    color: var(--accent) !important;
+    color: var(--primary) !important;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+/* Open/Closed status pill */
+.shop-banner-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 100px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--border);
+    background: var(--border-light);
+    max-width: 175px;
+}
+
+.shop-banner-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-dark);
+}
+
+.shop-banner-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .btn-cart {
-    background: var(--secondary);
-    color: var(--accent);
+    background: var(--border-light);
+    color: var(--primary);
     border: none;
     border-radius: 50%;
     width: 45px;
@@ -343,11 +514,13 @@ html.bb-no-splash #loading-screen {
     align-items: center;
     justify-content: center;
     position: relative;
+    flex-shrink: 0;
     transition: var(--transition);
 }
 
 .btn-cart:hover {
-    background: var(--secondary-light);
+    background: var(--secondary);
+    color: var(--accent);
     transform: scale(1.05);
 }
 
@@ -378,14 +551,43 @@ html.bb-no-splash #loading-screen {
 .navbar-toggler {
     border: none;
     padding: 0.5rem;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: transparent;
 }
 
 .navbar-toggler:focus {
     box-shadow: none;
 }
 
-.navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+/* Three independent bars so they can morph into an X, instead of a
+   flat SVG background-image that can only ever look like a hamburger. */
+.hamburger-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, width 0.3s ease;
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger-bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger-bar:nth-child(2) {
+    opacity: 0;
+    width: 0;
+}
+
+.navbar-toggler[aria-expanded="true"] .hamburger-bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
 }
 
 /* ============================================
@@ -620,6 +822,28 @@ html.bb-no-splash #loading-screen {
     box-shadow: var(--shadow-lg);
 }
 
+/* Compact the navbar only in the narrow band where six links + the
+   status pill + cart genuinely don't fit alongside the delivery/phone
+   cards — outside this range everything fits at full size. */
+@media (min-width: 992px) and (max-width: 1180px) {
+    .nav-info-phone {
+        display: none;
+    }
+
+    .nav-link {
+        font-size: 0.82rem;
+        padding: 0.45rem 0.35rem !important;
+    }
+
+    .nav-side-right {
+        gap: 0.3rem;
+    }
+
+    .shop-banner-pill {
+        max-width: 130px;
+    }
+}
+
 /* ============================================
    HERO SECTION
    ============================================ */
@@ -627,72 +851,120 @@ html.bb-no-splash #loading-screen {
     position: relative;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
+    background: #F5F4F0;
+    padding: 112px 1rem 1rem;
+}
+
+.hero-frame {
+    position: relative;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    border-radius: 32px;
     overflow: hidden;
+    box-shadow: 0 20px 45px rgba(15, 61, 46, 0.2);
+    display: flex;
+    align-items: center;
 }
 
 .hero-bg {
     position: absolute;
-    top: 0;
+    top: -10%;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1920&h=1080&fit=crop') center/cover no-repeat;
+    height: 120%;
+    background: url('../img/bg.png') 62% center/cover no-repeat;
+    filter: brightness(1.08) saturate(1.06) contrast(1.02);
+    will-change: transform;
 }
 
+/* Kept intentionally light — just enough contrast for the white
+   heading/body copy to stay readable. No color tint: pure black at
+   low opacity, fading out over the left half so the product photo on
+   the right keeps its original, unfiltered colors. */
 .hero-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(15, 61, 46, 0.92) 0%, rgba(15, 61, 46, 0.75) 50%, rgba(46, 139, 87, 0.6) 100%);
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.38) 0%, rgba(0, 0, 0, 0.2) 35%, rgba(0, 0, 0, 0.05) 55%, rgba(0, 0, 0, 0) 68%);
 }
 
 .hero-content {
     position: relative;
     z-index: 2;
-    padding: 120px 0 80px;
+    padding: 32px 3rem;
     width: 100%;
+}
+
+/* Percentage-capped, not just a fixed px value — .hero-frame's own
+   width scales a lot between breakpoints (near-full-bleed on wide
+   screens, narrower on tablets), and a fixed 600px column stays wide
+   enough at tablet widths to run text under the product photo. */
+.hero-inner {
+    max-width: min(600px, 52%);
+}
+
+/* Just above the tablet cutover, the side-by-side layout has room for
+   only a narrower text column before it reaches the product photo —
+   narrow the column and heading a little rather than switching to the
+   (comparatively oversized) stacked/full-width mobile treatment. */
+@media (min-width: 992px) and (max-width: 1240px) {
+    .hero-inner {
+        max-width: min(430px, 44%);
+    }
+
+    .hero-title {
+        font-size: clamp(1.7rem, 2.6vw, 2.4rem);
+    }
 }
 
 .hero-badge {
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(46, 139, 87, 0.9);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0.6rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0.55rem 1.4rem;
     border-radius: 50px;
     color: var(--accent);
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     animation: fadeInDown 1s ease;
 }
 
 .hero-title {
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-size: clamp(2rem, 3.4vw, 3.2rem);
     font-weight: 700;
     color: var(--accent);
-    line-height: 1.2;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.35);
     animation: fadeInUp 1s ease 0.2s both;
 }
 
+.hero-title-accent {
+    color: var(--secondary-light);
+}
+
 .hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.25rem);
-    color: rgba(255, 255, 255, 0.85);
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    line-height: 1.7;
+    font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+    color: rgba(255, 255, 255, 0.88);
+    max-width: 460px;
+    margin: 0 0 1.25rem;
+    line-height: 1.6;
     animation: fadeInUp 1s ease 0.4s both;
 }
 
 .hero-buttons {
+    display: flex;
+    flex-wrap: wrap;
     animation: fadeInUp 1s ease 0.6s both;
 }
 
@@ -700,7 +972,8 @@ html.bb-no-splash #loading-screen {
     padding: 0.875rem 2rem;
     font-weight: 600;
     border-radius: 50px;
-    transition: var(--transition);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero-buttons .btn-primary {
@@ -722,28 +995,55 @@ html.bb-no-splash #loading-screen {
 }
 
 .hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1.25rem;
     animation: fadeInUp 1s ease 0.8s both;
 }
 
 .stat-item {
-    text-align: center;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-align: left;
+    padding: 0.75rem 1.1rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    flex: 1 1 150px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-item:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.14);
     transform: translateY(-5px);
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(61, 175, 110, 0.25);
+    color: var(--secondary-light);
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.stat-text {
+    display: flex;
+    flex-direction: column;
 }
 
 .stat-number {
     display: block;
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--accent);
     line-height: 1;
@@ -751,9 +1051,9 @@ html.bb-no-splash #loading-screen {
 
 .stat-label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
 }
 
 .scroll-indicator {
@@ -2119,25 +2419,91 @@ html.bb-no-splash #loading-screen {
     }
 }
 
-@media (max-width: 767.98px) {
+/* Tablet widths (768–991px) still get the desktop nav (links inline,
+   no hamburger — that switches at 991.98px) but the side-by-side hero
+   layout runs out of room here: a text column wide enough to read
+   comfortably ends up sitting under the product photo. Switching to
+   the stacked mobile-style hero (text pinned to the top, product photo
+   revealed underneath) avoids that without touching the nav breakpoint. */
+@media (max-width: 991.98px) {
+    .hero {
+        min-height: auto;
+        /* The fixed header is now a two-row grid (toggler/logo/cart
+           plus the chip row underneath it) at this breakpoint, ~162px
+           tall — a plain single-row-height top padding here tucks the
+           hero badge and heading underneath the fixed nav. */
+        padding: 178px 0.75rem 1.25rem;
+    }
+
+    .hero-frame {
+        border-radius: 26px;
+        min-height: 560px;
+        align-items: stretch;
+    }
+
+    /* On a narrow/tall crop, cover-sizing at the desktop's 62%
+       horizontal position zooms in hard on the cup — recentering
+       keeps the frame from being dominated by it right where the
+       heading and paragraph need clear space to sit. */
+    .hero-bg {
+        top: 0;
+        height: 100%;
+        background-position: 25% top;
+    }
+
+    /* Flipped from the desktop's left-to-right scrim: dark at the top
+       where the heading/copy sit, fading out toward the bottom so the
+       product photo reads clearly underneath the text, matching the
+       reference's text-above/photo-below stacking. */
+    .hero-overlay {
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.38) 38%, rgba(0, 0, 0, 0.1) 62%, rgba(0, 0, 0, 0) 80%);
+    }
+
+    .hero-content {
+        padding: 32px 1.25rem 28px;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .hero-inner {
+        max-width: 100%;
+    }
+
     .hero-title {
-        font-size: 2.2rem;
+        font-size: 2.1rem;
+    }
+
+    .hero-buttons {
+        gap: 0.6rem;
     }
 
     .hero-buttons .btn {
-        display: block;
-        width: 100%;
-        margin: 0.5rem 0 !important;
+        flex: 1 1 auto;
+        white-space: nowrap;
+        margin: 0 !important;
+        padding: 0.8rem 1.4rem;
+        font-size: 0.92rem;
+    }
+
+    .hero-stats {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
     }
 
     .stat-item {
-        padding: 1rem;
+        flex: 1 1 0;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.4rem;
+        padding: 0.75rem 0.4rem;
     }
 
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
     }
+}
 
+@media (max-width: 767.98px) {
     .menu-filters {
         gap: 0.5rem;
     }
@@ -2176,16 +2542,63 @@ html.bb-no-splash #loading-screen {
         font-size: 1.75rem;
     }
 
-    .hero-stats .row {
-        --bs-gutter-x: 0.5rem;
+    .hero {
+        padding: 170px 0.5rem 1rem;
+    }
+
+    .hero-frame {
+        min-height: 460px;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-stats {
+        gap: 0.4rem;
     }
 
     .stat-item {
-        padding: 0.75rem 0.5rem;
+        padding: 0.65rem 0.3rem;
+    }
+
+    .stat-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 0.9rem;
     }
 
     .stat-label {
-        font-size: 0.7rem;
+        font-size: 0.62rem;
+    }
+
+    .nav-shell {
+        padding: 0.65rem 0.75rem 0.85rem;
+        column-gap: 0.4rem;
+    }
+
+    .nav-info-card {
+        padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+        gap: 0.4rem;
+        min-height: 46px;
+    }
+
+    .nav-info-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    .nav-info-label {
+        font-size: 0.58rem;
+    }
+
+    .nav-info-value {
+        font-size: 0.72rem;
+    }
+
+    .nav-info-phone .nav-info-value {
+        font-size: 0.72rem;
     }
 
     .about-img-float {
@@ -2299,12 +2712,106 @@ textarea:focus-visible {
 }
 /* Ensure navbar collapse works properly on mobile */
 @media (max-width: 991.98px) {
+    /* Two-row grid: toggler / centered logo / cart on row 1, the
+       delivery + phone chips spanning full width on row 2. The
+       toggler and cart button stay exactly where they already are in
+       the DOM (nested inside .nav-side-right > .nav-actions) — giving
+       those two wrappers display:contents promotes their children
+       into direct grid items so each can be placed independently,
+       without restructuring the markup or touching any JS selectors. */
+    .nav-shell {
+        display: grid;
+        /* minmax(0, 1fr), not bare 1fr — a bare fr track's implicit
+           minimum is its content's min-content size, which the chips
+           row (spanning all 3 columns) can blow way past on a narrow
+           phone. minmax(0, ...) lets the tracks actually shrink and
+           leaves wrapping/ellipsis on the children to handle the rest,
+           which is what keeps this from pushing the whole page wider
+           than the viewport. */
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas:
+            "toggler brand cart"
+            "chips chips chips";
+        align-items: center;
+        column-gap: 0.5rem;
+        row-gap: 0.85rem;
+        padding: 0.75rem 1rem 1rem;
+        position: relative;
+    }
+
+    .nav-side-left {
+        grid-area: chips;
+        display: flex;
+        align-items: stretch;
+        gap: 0.6rem;
+        min-width: 0;
+    }
+
+    #mainNav .navbar-brand {
+        grid-area: brand;
+        justify-self: center;
+    }
+
+    .nav-side-right {
+        grid-area: cart;
+        display: contents;
+    }
+
+    .nav-actions {
+        display: contents;
+    }
+
+    .navbar-toggler {
+        grid-area: toggler;
+        justify-self: start;
+    }
+
+    .btn-cart {
+        grid-area: cart;
+        justify-self: end;
+    }
+
+    /* Chips get the premium white/rounded/shadow treatment from the
+       reference — they share the row equally and match height
+       regardless of the location chip's two text lines vs. the
+       phone chip's one. */
+    .nav-info-card {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 52px;
+        background: var(--accent);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .nav-info-card:hover {
+        background: var(--accent);
+    }
+
+    /* min-width:0 lets these flex children actually shrink instead of
+       forcing the card wider than its 1fr share — ellipsis is the
+       fallback if "Karachi, Pakistan" still can't fit at the very
+       narrowest phones, so the row never scrolls horizontally. */
+    .nav-info-text {
+        min-width: 0;
+    }
+
+    .nav-info-label,
+    .nav-info-value {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     .navbar-collapse {
-        background: rgba(15, 61, 46, 0.98);
-        margin-top: 10px;
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        right: 0;
+        background: var(--accent);
+        margin-top: 0;
         padding: 15px;
-        border-radius: 12px;
-        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        box-shadow: 0 14px 40px rgba(15, 61, 46, 0.16);
 
         /* IMPORTANT: keep Bootstrap collapse hidden by default on mobile */
         height: 0 !important;
@@ -2317,21 +2824,21 @@ textarea:focus-visible {
         overflow: visible !important;
         opacity: 1 !important;
     }
-    
+
     .navbar-collapse.collapsing {
         height: auto;
         overflow: hidden;
         transition: height 0.35s ease;
     }
-    
+
     .navbar-nav {
         align-items: flex-start !important;
     }
-    
+
     .navbar-nav .nav-item {
         width: 100%;
     }
-    
+
     .navbar-nav .nav-link {
         /* inline-block (not a full-width block) so the active-state
            underline below sizes itself to the actual word, not the
@@ -2339,6 +2846,13 @@ textarea:focus-visible {
            padding is 0 either way, so tap width is unaffected. */
         display: inline-block;
         padding: 12px 0;
+    }
+
+    /* Hidden below the collapse breakpoint — with the links tucked
+       behind the hamburger there isn't enough width left for the
+       status pill without it reaching under the centered logo badge. */
+    #shopBanner {
+        display: none !important;
     }
 }
 
@@ -3045,9 +3559,9 @@ textarea:focus-visible {
    TRACK ORDER NAV BUTTON
    ============================================ */
 .btn-track-nav {
-    background: rgba(255,255,255,0.12);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.3);
+    background: var(--border-light);
+    color: var(--primary);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 0.35rem 0.9rem;
     font-family: 'Poppins', sans-serif;
@@ -3061,6 +3575,7 @@ textarea:focus-visible {
     white-space: nowrap;
 }
 .btn-track-nav:hover {
-    background: rgba(255,255,255,0.22);
-    border-color: rgba(255,255,255,0.5);
+    background: var(--secondary);
+    color: var(--accent);
+    border-color: var(--secondary);
 }
