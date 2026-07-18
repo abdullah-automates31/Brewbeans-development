@@ -277,20 +277,20 @@ $(document).ready(function () {
     // ==========================================
 
     // Spring pop-in for menu cards as they scroll into view, staggered by column.
+    // Motion.js vanilla passes the element directly to the callback (not an IntersectionObserverEntry).
     function animateMenuItemsIn() {
         if (!window.Motion) {
             $('#menuGrid .motion-pop').css('opacity', 1);
             return;
         }
-        Motion.inView('#menuGrid .motion-pop', (entry) => {
-            const target = entry.target;
-            const column = $(target).index();
+        Motion.inView('#menuGrid .motion-pop', (element) => {
+            const column = $(element).index();
             Motion.animate(
-                target,
+                element,
                 { opacity: [0, 1], scale: [0.85, 1], y: [30, 0] },
                 { duration: 0.5, delay: (column % 4) * 0.08, easing: [0.22, 1, 0.36, 1] }
             );
-        }, { margin: '0px 0px -80px 0px' });
+        });
     }
 
     function renderMenu(filter = 'all') {
