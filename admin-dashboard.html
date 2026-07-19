@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
     :root {
@@ -1263,6 +1264,98 @@
 
     .assign-group-row:last-child { border-bottom: none; }
     .assign-group-row label { flex: 1; font-size: 0.875rem; font-weight: 500; cursor: pointer; }
+
+    /* ── ADVANCED ORDER FILTERS ── */
+    .advanced-filters {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--border);
+      align-items: center; background: var(--bg);
+    }
+    .adv-filter-label { font-size: 0.75rem; font-weight: 600; color: var(--text-light); margin-right: 0.25rem; }
+    .adv-filter-input {
+      padding: 0.35rem 0.65rem; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.8rem; font-family: inherit;
+      background: white; color: var(--text-dark); cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .adv-filter-input:focus { outline: none; border-color: var(--secondary); }
+    .adv-filter-sep { color: var(--border); font-size: 0.85rem; }
+    .adv-clear-btn {
+      margin-left: auto; font-size: 0.78rem; color: var(--secondary);
+      background: none; border: none; cursor: pointer; font-weight: 600;
+      padding: 0.3rem 0.5rem; border-radius: 6px;
+    }
+    .adv-clear-btn:hover { background: rgba(46,139,87,0.08); }
+    .orders-filter-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .btn-bulk-select {
+      padding: 0.4rem 0.9rem; border: 1.5px solid var(--border);
+      background: white; border-radius: 20px; font-size: 0.82rem;
+      font-family: inherit; cursor: pointer; color: var(--text-medium);
+      display: flex; align-items: center; gap: 0.35rem; transition: 0.2s;
+    }
+    .btn-bulk-select.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-bulk-select:hover:not(.active) { border-color: var(--secondary); color: var(--secondary); }
+
+    /* ── BULK SELECT MODE ── */
+    .order-card.selectable { cursor: default !important; }
+    .order-card .order-select-cb { display: none; }
+    .order-card.selectable .order-select-cb { display: flex; align-items: center; }
+    .order-select-cb input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer; accent-color: var(--secondary);
+    }
+    .order-card.selected-order { border-color: var(--secondary); background: #f0faf4; }
+
+    .bulk-action-bar {
+      position: fixed; bottom: -80px; left: 260px; right: 0;
+      background: var(--primary); color: white;
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.85rem 2rem; z-index: 500;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+      transition: bottom 0.3s ease;
+    }
+    .bulk-action-bar.visible { bottom: 0; }
+    .bulk-action-bar .bulk-count { font-size: 0.9rem; font-weight: 600; margin-right: auto; }
+    .btn-bulk-action {
+      padding: 0.45rem 1rem; border-radius: 8px; border: none;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: 0.2s;
+    }
+    .btn-bulk-action.preparing { background: #f59e0b; color: white; }
+    .btn-bulk-action.delivered { background: #16a34a; color: white; }
+    .btn-bulk-action.cancel    { background: rgba(255,255,255,0.15); color: white; border: 1.5px solid rgba(255,255,255,0.3); }
+    .btn-bulk-action:hover { opacity: 0.85; }
+
+    /* ── HOURS QUICK TOGGLES ── */
+    .hours-quick-btns { display: flex; gap: 0.5rem; margin-bottom: 1rem; padding: 0 0 1rem; border-bottom: 1px solid var(--border); }
+    .btn-quick-hours {
+      padding: 0.4rem 1rem; border-radius: 8px; border: 1.5px solid var(--border);
+      background: white; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; display: flex; align-items: center; gap: 0.4rem; transition: 0.2s;
+    }
+    .btn-quick-hours.danger { border-color: #dc2626; color: #dc2626; }
+    .btn-quick-hours.danger:hover { background: #dc2626; color: white; }
+    .btn-quick-hours.success { border-color: var(--secondary); color: var(--secondary); }
+    .btn-quick-hours.success:hover { background: var(--secondary); color: white; }
+
+    /* ── ANALYTICS ENHANCEMENTS ── */
+    .chart-wrap { padding: 1rem 0 0.5rem; }
+    .heat-grid {
+      display: grid; grid-template-columns: repeat(24, 1fr);
+      gap: 3px; padding: 0.5rem 0;
+    }
+    .heat-cell {
+      height: 34px; border-radius: 4px; background: rgba(46,139,87,0.08);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; position: relative; cursor: default;
+    }
+    .heat-cell .heat-hour { font-size: 0.58rem; color: var(--text-light); font-weight: 500; }
+    .heat-cell .heat-count { font-size: 0.65rem; font-weight: 700; color: var(--primary); }
+    .heat-cell[title]:hover::after {
+      content: attr(title); position: absolute; bottom: 110%; left: 50%;
+      transform: translateX(-50%); background: var(--primary); color: white;
+      padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.72rem;
+      white-space: nowrap; z-index: 10; pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -1377,17 +1470,41 @@
       </div>
 
       <div class="card">
-        <div class="orders-filters">
-          <button class="filter-btn active" data-filter="active">Active</button>
-          <button class="filter-btn" data-filter="all">All Orders</button>
-          <button class="filter-btn" data-filter="delivered">Delivered</button>
-          <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+        <div class="orders-filters orders-filter-row">
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="filter-btn active" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="all">All Orders</button>
+            <button class="filter-btn" data-filter="delivered">Delivered</button>
+            <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+          </div>
+          <button class="btn-bulk-select" id="bulkSelectBtn"><i class="bi bi-check2-square"></i> Select</button>
         </div>
         <div class="search-wrapper">
           <div class="search-input-wrap">
             <i class="bi bi-search"></i>
             <input type="text" class="search-input" id="searchInput" placeholder="Search by name, phone or order number...">
           </div>
+        </div>
+        <div class="advanced-filters">
+          <span class="adv-filter-label">Date:</span>
+          <input type="date" class="adv-filter-input" id="filterDateFrom">
+          <span class="adv-filter-sep">→</span>
+          <input type="date" class="adv-filter-input" id="filterDateTo">
+          <span class="adv-filter-sep" style="margin-left:0.75rem">|</span>
+          <span class="adv-filter-label" style="margin-left:0.75rem">Payment:</span>
+          <select class="adv-filter-input" id="filterPayMethod">
+            <option value="">All Methods</option>
+            <option value="cod">Cash on Delivery</option>
+            <option value="jazzcash">JazzCash</option>
+            <option value="easypaisa">EasyPaisa</option>
+          </select>
+          <select class="adv-filter-input" id="filterPayStatus">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="failed">Failed</option>
+          </select>
+          <button class="adv-clear-btn" id="clearFiltersBtn"><i class="bi bi-x-circle"></i> Clear</button>
         </div>
         <div class="orders-list" id="ordersList">
           <div class="loading-spinner">
@@ -1396,6 +1513,14 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- BULK ACTION BAR -->
+    <div class="bulk-action-bar" id="bulkActionBar">
+      <span class="bulk-count" id="bulkCount">0 orders selected</span>
+      <button class="btn-bulk-action preparing" onclick="bulkUpdateStatus('preparing')"><i class="bi bi-clock"></i> Mark Preparing</button>
+      <button class="btn-bulk-action delivered" onclick="bulkUpdateStatus('delivered')"><i class="bi bi-check-circle"></i> Mark Delivered</button>
+      <button class="btn-bulk-action cancel" onclick="bulkUpdateStatus('cancelled')"><i class="bi bi-x-circle"></i> Cancel</button>
     </div>
 
     <!-- MENU PAGE -->
@@ -1423,6 +1548,16 @@
         <div class="card-header">
           <h3>Business Hours</h3>
           <button class="btn-save-hours" id="saveHoursBtn">Save Changes</button>
+        </div>
+        <div class="card-body" style="padding-bottom:0">
+          <div class="hours-quick-btns">
+            <button class="btn-quick-hours danger" onclick="closeTodayQuick()">
+              <i class="bi bi-moon-stars"></i> Close Today
+            </button>
+            <button class="btn-quick-hours success" onclick="openAllWeekQuick()">
+              <i class="bi bi-sun"></i> Open All Week
+            </button>
+          </div>
         </div>
         <div id="hoursContainer">
           <div class="loading-spinner"><div class="spinner-ring"></div><p>Loading hours...</p></div>
@@ -1526,11 +1661,23 @@
 
       </div>
 
-      <!-- Last 7 Days -->
-      <div class="card">
-        <div class="card-header"><h3>Last 7 Days</h3></div>
-        <div class="card-body" id="last7Days">
-          <div class="loading-spinner"><div class="spinner-ring"></div></div>
+      <!-- Revenue Chart -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><h3>Last 7 Days — Revenue</h3></div>
+        <div class="card-body">
+          <div class="chart-wrap">
+            <canvas id="revenueChart" height="90"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Peak Hours Heatmap -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><h3>Peak Order Hours <span style="font-size:0.75rem;font-weight:400;color:var(--text-light)">(this month)</span></h3></div>
+        <div class="card-body">
+          <div class="heat-grid" id="peakHoursGrid">
+            <div class="loading-spinner"><div class="spinner-ring"></div></div>
+          </div>
         </div>
       </div>
 
