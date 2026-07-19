@@ -1395,6 +1395,11 @@ html.bb-no-splash #loading-screen {
     color: var(--text-dark);
     background: transparent;
 }
+.menu-search-bar input:focus,
+.menu-search-bar input:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
 .menu-search-bar input::placeholder { color: var(--text-light); }
 
 .menu-filters {
