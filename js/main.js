@@ -23,6 +23,12 @@ $(document).ready(function () {
     // partially hidden behind it.
     const NAV_SCROLL_OFFSET = 110;
 
+    function escapeHtml(str) {
+        return String(str == null ? '' : str).replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+    }
+
     function sanitizeCartData(storedCart) {
         if (!Array.isArray(storedCart)) return [];
         return storedCart
@@ -31,8 +37,11 @@ $(document).ready(function () {
                 const selectedAddons = Array.isArray(item.selectedAddons)
                     ? item.selectedAddons.filter(a => a && typeof a.name === 'string')
                     : [];
-                const cartKey = item.cartKey || (selectedAddons.length
-                    ? `${item.id}_${selectedAddons.map(a => a.name).join('|')}`
+                const specialInstructions = typeof item.specialInstructions === 'string'
+                    ? item.specialInstructions.slice(0, 100)
+                    : '';
+                const cartKey = item.cartKey || (selectedAddons.length || specialInstructions
+                    ? `${item.id}_${selectedAddons.map(a => a.name).join('|')}_${specialInstructions}`
                     : String(item.id));
                 return {
                     id: Number(item.id),
@@ -41,6 +50,7 @@ $(document).ready(function () {
                     price: Number(item.price),
                     addonPrice: Number(item.addonPrice) || 0,
                     selectedAddons,
+                    specialInstructions,
                     image: item.image || '',
                     quantity: Number(item.quantity)
                 };
@@ -145,6 +155,78 @@ $(document).ready(function () {
                 ticking = true;
             }
         });
+    })();
+
+    // ==========================================
+    // HERO CAROUSEL
+    // ==========================================
+    (function () {
+        const $slides = $('.hero-slide');
+        const $dots = $('.hero-dot');
+        const HERO_AUTOPLAY_MS = 4000;
+
+        if (!$slides.length) return;
+
+        let current = $slides.filter('.is-active').data('slide-index') || 0;
+        let autoplayTimer = null;
+
+        function goToSlide(index) {
+            const next = ((index % $slides.length) + $slides.length) % $slides.length;
+            if (next === current) return;
+            $slides.eq(current).removeClass('is-active');
+            $dots.eq(current).removeClass('is-active');
+            current = next;
+            $slides.eq(current).addClass('is-active');
+            $dots.eq(current).addClass('is-active');
+        }
+
+        function startAutoplay() {
+            stopAutoplay();
+            autoplayTimer = setInterval(function () {
+                goToSlide(current + 1);
+            }, HERO_AUTOPLAY_MS);
+        }
+
+        function stopAutoplay() {
+            if (autoplayTimer) {
+                clearInterval(autoplayTimer);
+                autoplayTimer = null;
+            }
+        }
+
+        $('#heroNext').on('click', function () {
+            goToSlide(current + 1);
+            startAutoplay();
+        });
+
+        $('#heroPrev').on('click', function () {
+            goToSlide(current - 1);
+            startAutoplay();
+        });
+
+        $dots.on('click', function () {
+            goToSlide($(this).index());
+            startAutoplay();
+        });
+
+        // Swipe navigation — the primary control on mobile, where the
+        // stacked layout leaves no room to overlay arrows/dots.
+        let heroTouchStartX = 0;
+        const $heroFrame = $('#heroFrame');
+
+        $heroFrame.on('touchstart', function (e) {
+            heroTouchStartX = e.originalEvent.changedTouches[0].screenX;
+        });
+
+        $heroFrame.on('touchend', function (e) {
+            const diff = heroTouchStartX - e.originalEvent.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) {
+                goToSlide(current + (diff > 0 ? 1 : -1));
+                startAutoplay();
+            }
+        });
+
+        startAutoplay();
     })();
 
     // // Smooth scrolling for nav links
@@ -524,14 +606,18 @@ $(document).ready(function () {
             const itemTotal = unitPrice * item.quantity;
             subtotal += itemTotal;
             const addonHtml = item.selectedAddons && item.selectedAddons.length
-                ? `<div class="cart-item-addons">${item.selectedAddons.map(a => a.price > 0 ? `${a.name} +Rs.${a.price}` : a.name).join(' · ')}</div>`
+                ? `<div class="cart-item-addons">${item.selectedAddons.map(a => a.price > 0 ? `${escapeHtml(a.name)} +Rs.${a.price}` : escapeHtml(a.name)).join(' · ')}</div>`
+                : '';
+            const noteHtml = item.specialInstructions
+                ? `<div class="cart-item-note"><i class="bi bi-pencil-fill"></i> ${escapeHtml(item.specialInstructions)}</div>`
                 : '';
             const html = `
                 <div class="cart-item" data-cart-key="${item.cartKey}">
-                    <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                    <img src="${item.image}" alt="${escapeHtml(item.name)}" class="cart-item-img">
                     <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-name">${escapeHtml(item.name)}</div>
                         ${addonHtml}
+                        ${noteHtml}
                         <div class="cart-item-price">Rs. ${itemTotal}</div>
                         <div class="cart-item-actions">
                             <button class="cart-qty-btn qty-minus" data-cart-key="${item.cartKey}"><i class="bi bi-dash"></i></button>
@@ -559,6 +645,8 @@ $(document).ready(function () {
     // ADDON SELECTION
     // ==========================================
     let currentAddonItem = null;
+    let currentAddonQty = 1;
+    let addonPriceAnimFrame = null;
 
     function addDirectToCart(menuItem, $btn) {
         const cartKey = String(menuItem.id);
@@ -588,54 +676,123 @@ $(document).ready(function () {
         }
     }
 
-    async function openAddonModal(menuItem, groupIds) {
+    // Cold/blended drinks get the ice+condensation treatment; hot
+    // drinks (including hot chocolate, which shares the hot-coffee
+    // category) get steam. Anything else (desserts, sandwiches) gets
+    // neither.
+    const HOT_MEDIA_CATS = ['hot-coffee'];
+    const COLD_MEDIA_CATS = ['cold-coffee', 'frappes', 'summer-coolers'];
+
+    // Customization catalog, kept entirely on the frontend (no Supabase
+    // addon_groups/addons involved) and shown per menu-item category.
+    // "required: true" + "multi: false" renders as radio buttons;
+    // "multi: true" renders as checkboxes.
+    const LOCAL_ADDON_CATALOG = {
+        'hot-coffee': [
+            { id: 'temp', name: 'Temperature Preference', required: true, multi: false, options: [
+                { name: 'Extra Hot', price: 0 }, { name: 'Hot', price: 0 }, { name: 'Warm', price: 0 }, { name: 'Room Temperature', price: 0 }
+            ]},
+            { id: 'size', name: 'Cup Size', required: false, multi: false, options: [
+                { name: 'Small', price: 0 }, { name: 'Medium', price: 0 }, { name: 'Large', price: 0 }
+            ]},
+            { id: 'milk', name: 'Milk Options', required: false, multi: false, options: [
+                { name: 'Full Cream', price: 0 }, { name: 'Low Fat', price: 0 }, { name: 'Oat Milk', price: 70 },
+                { name: 'Almond Milk', price: 90 }, { name: 'Soy Milk', price: 80 }
+            ]},
+            { id: 'blend', name: 'Choose Your Blend', required: false, multi: false, options: [
+                { name: 'House Blend', price: 0 }, { name: 'Ethiopian Single Origin', price: 150 }, { name: 'Colombian Supremo', price: 120 }
+            ]},
+            { id: 'sweetness', name: 'Sweetness', required: false, multi: false, options: [
+                { name: 'No Sugar', price: 0 }, { name: 'Less Sugar', price: 0 }, { name: 'Regular', price: 0 }, { name: 'Extra Sweet', price: 0 }
+            ]},
+            { id: 'extras', name: 'Add Extras', required: false, multi: true, options: [
+                { name: 'Extra Espresso Shot', price: 60 }, { name: 'Vanilla Syrup', price: 50 }, { name: 'Caramel Syrup', price: 50 },
+                { name: 'Hazelnut Syrup', price: 50 }, { name: 'Chocolate Syrup', price: 50 }, { name: 'Whipped Cream', price: 50 },
+                { name: 'Cinnamon Powder', price: 30 }, { name: 'Chocolate Powder', price: 40 }, { name: 'Marshmallows', price: 70 }
+            ]}
+        ],
+        'cold-coffee': [
+            { id: 'temp', name: 'Temperature Preference', required: true, multi: false, options: [
+                { name: 'Extra Cold', price: 0 }, { name: 'Cold', price: 0 }, { name: 'Room Temperature', price: 0 }
+            ]},
+            { id: 'blend', name: 'Choose Your Blend', required: false, multi: false, options: [
+                { name: 'House Blend', price: 0 }, { name: 'Ethiopian Single Origin', price: 150 }, { name: 'Colombian Supremo', price: 120 }
+            ]},
+            { id: 'extras', name: 'Add Extras', required: false, multi: true, options: [
+                { name: 'Extra Shot', price: 60 }, { name: 'Caramel Syrup', price: 50 }, { name: 'Hazelnut Syrup', price: 50 },
+                { name: 'Oat Milk', price: 70 }, { name: 'Whipped Cream', price: 50 }, { name: 'Chocolate Powder', price: 40 }
+            ]}
+        ]
+    };
+    LOCAL_ADDON_CATALOG.frappes = LOCAL_ADDON_CATALOG['cold-coffee'];
+    LOCAL_ADDON_CATALOG['summer-coolers'] = LOCAL_ADDON_CATALOG['cold-coffee'];
+
+    function addonOptionIcon(groupId, name) {
+        if (groupId !== 'temp' && groupId !== 'blend') return '';
+        const n = name.toLowerCase();
+        if (groupId === 'blend') return 'bi-cup-hot';
+        if (n.includes('cold') || n.includes('iced')) return 'bi-snow2';
+        if (n.includes('hot')) return 'bi-fire';
+        return 'bi-thermometer-half';
+    }
+
+    function openAddonModal(menuItem) {
         currentAddonItem = menuItem;
+        currentAddonQty = 1;
+        $('#addonQtyValue').text('1');
         $('#addonModalItemName').text(menuItem.name);
+        $('#addonModalItemDesc').text(menuItem.description || '');
+        $('#addonModalBasePrice').text(`Rs. ${menuItem.price}`);
+        $('#addonModalImage').attr('src', menuItem.image || '').attr('alt', menuItem.name);
         $('#addonTotalPrice').text(menuItem.price);
+        $('#addonPriceBreakdown').removeClass('show collapsed').empty();
+        $('#addonPricePillToggle').removeClass('expanded');
+        $('#addonSpecialInstructions').val('');
+        $('#addonNotesCount').text('0');
+        resetAddonParallax();
+
+        const $media = $('#addonMedia').removeClass('is-hot is-cold');
+        if (HOT_MEDIA_CATS.includes(menuItem.category)) $media.addClass('is-hot');
+        else if (COLD_MEDIA_CATS.includes(menuItem.category)) $media.addClass('is-cold');
 
         const $container = $('#addonGroupsContainer');
-        $container.html('<div class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div><p class="mt-2 text-muted small">Loading options...</p></div>');
         addonModal.show();
 
-        const { data: groups, error } = await supabaseClient
-            .from('addon_groups')
-            .select('id, name, is_required, addons(id, name, price, is_available)')
-            .in('id', groupIds);
+        const groups = LOCAL_ADDON_CATALOG[menuItem.category] || [];
 
-        if (error || !groups) {
-            $container.html('<p class="text-center text-muted py-3 small">Could not load options.</p>');
-            return;
-        }
-
-        const validGroups = groups
-            .map(g => ({ ...g, addons: (g.addons || []).filter(a => a.is_available) }))
-            .filter(g => g.addons.length > 0)
-            .sort((a, b) => (a.is_required === b.is_required ? a.name.localeCompare(b.name) : a.is_required ? -1 : 1));
-
-        if (!validGroups.length) {
-            addonModal.hide();
-            addDirectToCart(menuItem, null);
+        if (!groups.length) {
+            $container.html('<div class="addon-empty-state"><i class="bi bi-check2-circle"></i><p>This item is ready to go — just pick your quantity below.</p></div>');
+            updateAddonTotal();
             return;
         }
 
         let html = '';
-        validGroups.forEach(group => {
-            const badge = group.is_required
+        groups.forEach(group => {
+            const badge = group.required
                 ? '<span class="addon-required-badge">Required</span>'
                 : '<span class="addon-optional-badge">Optional</span>';
-            const optionsHtml = group.addons.map(addon => `
+            const optionsHtml = group.options.map(addon => {
+                const icon = addonOptionIcon(group.id, addon.name);
+                return `
                 <div class="addon-option"
                      data-group-id="${group.id}"
-                     data-required="${group.is_required}"
+                     data-required="${!group.multi}"
                      data-addon-name="${addon.name.replace(/"/g, '&quot;')}"
                      data-addon-price="${addon.price}">
-                    <span class="addon-option-name">${addon.name}</span>
+                    <span class="addon-option-name">${icon ? `<i class="bi ${icon} addon-option-icon"></i>` : ''}${addon.name}</span>
                     ${addon.price > 0 ? `<span class="addon-option-price">+Rs.${addon.price}</span>` : ''}
-                </div>`).join('');
+                </div>`;
+            }).join('');
+            // data-required drives radio-vs-checkbox selection behaviour
+            // and the ::before indicator shape (single-select vs
+            // multi-select); data-mandatory is the separate "must pick
+            // one before Add to Cart" flag used by the submit handler —
+            // a group can be single-select (radio) without being
+            // mandatory, e.g. Cup Size or Choose Your Blend here.
             html += `
                 <div class="addon-group">
                     <div class="addon-group-title">${group.name} ${badge}</div>
-                    <div class="addon-options" data-group-id="${group.id}" data-required="${group.is_required}">
+                    <div class="addon-options" data-group-id="${group.id}" data-required="${!group.multi}" data-mandatory="${!!group.required}">
                         ${optionsHtml}
                     </div>
                 </div>`;
@@ -644,23 +801,127 @@ $(document).ready(function () {
         updateAddonTotal();
     }
 
-    function updateAddonTotal() {
-        if (!currentAddonItem) return;
-        let extra = 0;
-        $('.addon-option.selected').each(function () {
-            extra += parseInt($(this).data('addon-price')) || 0;
-        });
-        $('#addonTotalPrice').text(currentAddonItem.price + extra);
+    // Eased rAF count-up/down instead of an instant text swap, so the
+    // sticky bar's price visibly reacts to every option/qty change.
+    function animateAddonPrice(to) {
+        const $el = $('#addonTotalPrice');
+        const from = parseInt($el.text(), 10) || 0;
+        if (from === to) { $el.text(to); return; }
+        if (addonPriceAnimFrame) cancelAnimationFrame(addonPriceAnimFrame);
+        const duration = 300;
+        const start = performance.now();
+        function tick(now) {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 3);
+            $el.text(Math.round(from + (to - from) * eased));
+            addonPriceAnimFrame = p < 1 ? requestAnimationFrame(tick) : null;
+        }
+        addonPriceAnimFrame = requestAnimationFrame(tick);
     }
 
-    // Addon option click — radio for required, checkbox for optional
+    function updateAddonTotal() {
+        if (!currentAddonItem) return;
+        const selectedAddons = [];
+        let extra = 0;
+        $('.addon-option.selected').each(function () {
+            const price = parseInt($(this).data('addon-price')) || 0;
+            extra += price;
+            selectedAddons.push({ name: $(this).data('addon-name'), price });
+        });
+
+        const total = (currentAddonItem.price + extra) * currentAddonQty;
+        animateAddonPrice(total);
+
+        const $breakdown = $('#addonPriceBreakdown');
+        if (selectedAddons.length || currentAddonQty > 1) {
+            let rows = `<div class="addon-breakdown-row"><span>Base Price</span><span>Rs. ${currentAddonItem.price}</span></div>`;
+            selectedAddons.forEach(a => {
+                if (a.price > 0) rows += `<div class="addon-breakdown-row"><span>${a.name}</span><span>+Rs. ${a.price}</span></div>`;
+            });
+            if (currentAddonQty > 1) rows += `<div class="addon-breakdown-row addon-breakdown-qty"><span>Quantity</span><span>&times; ${currentAddonQty}</span></div>`;
+            $breakdown.html(rows).addClass('show');
+        } else {
+            $breakdown.removeClass('show').empty();
+        }
+    }
+
+    // Quantity stepper
+    $('#addonQtyMinus').on('click', function () {
+        if (currentAddonQty <= 1) return;
+        currentAddonQty--;
+        $('#addonQtyValue').text(currentAddonQty);
+        updateAddonTotal();
+    });
+
+    $('#addonQtyPlus').on('click', function () {
+        if (currentAddonQty >= 20) return;
+        currentAddonQty++;
+        $('#addonQtyValue').text(currentAddonQty);
+        updateAddonTotal();
+    });
+
+    // Special instructions char counter
+    $('#addonSpecialInstructions').on('input', function () {
+        $('#addonNotesCount').text(this.value.length);
+    });
+
+    // Price pill doubles as a collapse/expand toggle for the breakdown
+    $('#addonPricePillToggle').on('click', function () {
+        $(this).toggleClass('expanded');
+        $('#addonPriceBreakdown').toggleClass('collapsed');
+    });
+
+    // Mouse-reactive tilt on the product image — layered on top of the
+    // stage's own slow auto float/rotate (see addonMediaMotion) rather
+    // than fighting it, since it targets the inner img, not the stage.
+    function resetAddonParallax() {
+        $('#addonModalImage').css('transform', '');
+    }
+
+    $('#addonMedia').on('mousemove', function (e) {
+        const rect = this.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        $('#addonModalImage').css('transform', `rotateY(${px * 14}deg) rotateX(${-py * 14}deg)`);
+    });
+
+    $('#addonMedia').on('mouseleave', resetAddonParallax);
+
+    // Lightweight ripple for the submit + qty buttons — purely visual,
+    // doesn't interfere with their real click handlers below.
+    $(document).on('click', '.btn-addon-submit, .addon-qty-btn', function (e) {
+        const el = this;
+        const rect = el.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const $ripple = $('<span class="btn-ripple"></span>').css({
+            width: size,
+            height: size,
+            left: (e.clientX - rect.left - size / 2) + 'px',
+            top: (e.clientY - rect.top - size / 2) + 'px'
+        });
+        $(el).append($ripple);
+        setTimeout(() => $ripple.remove(), 650);
+    });
+
+    // Reset stale state once the modal is fully hidden (X, backdrop,
+    // or Esc — anything that isn't the add-to-cart submit).
+    document.getElementById('addonModal').addEventListener('hidden.bs.modal', function () {
+        currentAddonItem = null;
+        currentAddonQty = 1;
+    });
+
+    // Addon option click — radio for required, checkbox for optional.
+    // Clicking the already-selected option in a single-select group
+    // deselects it (instead of being a no-op), so switching your mind
+    // doesn't force picking something first just to clear it.
     $(document).on('click', '.addon-option', function () {
         const $this = $(this);
         const groupId = $this.data('group-id');
         const isRequired = $this.closest('.addon-options').data('required');
         if (isRequired === true || isRequired === 'true') {
+            const wasSelected = $this.hasClass('selected');
             $(`.addon-option[data-group-id="${groupId}"]`).removeClass('selected');
-            $this.addClass('selected');
+            if (!wasSelected) $this.addClass('selected');
         } else {
             $this.toggleClass('selected');
         }
@@ -672,7 +933,7 @@ $(document).ready(function () {
         if (!currentAddonItem) return;
 
         let allRequiredFilled = true;
-        $('#addonGroupsContainer .addon-options[data-required="true"]').each(function () {
+        $('#addonGroupsContainer .addon-options[data-mandatory="true"]').each(function () {
             const groupId = $(this).data('group-id');
             if ($(`.addon-option.selected[data-group-id="${groupId}"]`).length === 0) {
                 allRequiredFilled = false;
@@ -693,13 +954,15 @@ $(document).ready(function () {
             addonPrice += price;
         });
 
-        const cartKey = selectedAddons.length
-            ? `${currentAddonItem.id}_${selectedAddons.map(a => a.name).join('|')}`
+        const qty = currentAddonQty || 1;
+        const specialInstructions = ($('#addonSpecialInstructions').val() || '').trim().slice(0, 100);
+        const cartKey = selectedAddons.length || specialInstructions
+            ? `${currentAddonItem.id}_${selectedAddons.map(a => a.name).join('|')}_${specialInstructions}`
             : String(currentAddonItem.id);
 
         const existingItem = cart.find(item => item.cartKey === cartKey);
         if (existingItem) {
-            existingItem.quantity++;
+            existingItem.quantity += qty;
         } else {
             cart.push({
                 id: currentAddonItem.id,
@@ -708,38 +971,28 @@ $(document).ready(function () {
                 price: currentAddonItem.price,
                 addonPrice,
                 selectedAddons,
+                specialInstructions,
                 image: currentAddonItem.image,
-                quantity: 1
+                quantity: qty
             });
         }
 
+        const addedName = currentAddonItem.name;
         addonModal.hide();
         updateCart();
-        showToast(`${currentAddonItem.name} added to cart!`);
+        showToast(`${addedName} added to cart!`);
         currentAddonItem = null;
     });
 
-    // Add to cart (checks for addon groups first)
-    $(document).on('click', '.btn-add-cart', async function () {
+    // Add to cart — every item now opens the customization modal (image,
+    // quantity, and any category- or item-configured addon groups)
+    // instead of adding straight to the cart. openAddonModal does its
+    // own fetching, so this just hands off the item.
+    $(document).on('click', '.btn-add-cart', function () {
         const id = parseInt($(this).data('id'));
         const menuItem = menuItems.find(item => item.id === id);
         if (!menuItem) return;
-
-        const $btn = $(this);
-        $btn.prop('disabled', true);
-
-        const { data: groupLinks } = await supabaseClient
-            .from('menu_item_addon_groups')
-            .select('addon_group_id')
-            .eq('menu_item_id', id);
-
-        $btn.prop('disabled', false);
-
-        if (groupLinks && groupLinks.length > 0) {
-            openAddonModal(menuItem, groupLinks.map(g => g.addon_group_id));
-        } else {
-            addDirectToCart(menuItem, $btn);
-        }
+        openAddonModal(menuItem);
     });
 
     // Cart quantity controls
@@ -830,13 +1083,16 @@ $(document).ready(function () {
             const itemTotal = unitPrice * item.quantity;
             subtotal += itemTotal;
             const addonNames = item.selectedAddons && item.selectedAddons.length
-                ? `<span class="checkout-item-addons">${item.selectedAddons.map(a => a.name).join(', ')}</span>`
+                ? `<span class="checkout-item-addons">${item.selectedAddons.map(a => escapeHtml(a.name)).join(', ')}</span>`
+                : '';
+            const noteSpan = item.specialInstructions
+                ? `<span class="checkout-item-note"><i class="bi bi-pencil-fill"></i> ${escapeHtml(item.specialInstructions)}</span>`
                 : '';
             const html = `
                 <div class="checkout-item">
                     <span class="checkout-item-name">
                         <span class="checkout-item-qty">${item.quantity}x</span>
-                        ${item.name}${addonNames}
+                        ${escapeHtml(item.name)}${addonNames}${noteSpan}
                     </span>
                     <span>Rs. ${itemTotal}</span>
                 </div>
@@ -942,7 +1198,14 @@ $(document).ready(function () {
                 .filter(ci => ci.selectedAddons && ci.selectedAddons.length > 0)
                 .map(ci => `${ci.name}: ${ci.selectedAddons.map(a => a.name).join(', ')}`)
                 .join(' | ');
-            const fullNotes = [notes, addonSummary].filter(Boolean).join('\n');
+            // Per-item customization notes have no dedicated backend field —
+            // folding them into the order-level notes (same as addons above)
+            // is what actually gets them in front of staff.
+            const instructionsSummary = cart
+                .filter(ci => ci.specialInstructions)
+                .map(ci => `${ci.name} note: ${ci.specialInstructions}`)
+                .join(' | ');
+            const fullNotes = [notes, addonSummary, instructionsSummary].filter(Boolean).join('\n');
 
             const { data: order, error } = await supabaseClient.functions.invoke('submit-order', {
                 body: {

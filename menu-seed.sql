@@ -6,7 +6,7 @@ DELETE FROM menu_items;
 INSERT INTO menu_items (name, category, description, price, image, is_available, is_popular) VALUES
 
 -- HOT COFFEES
-('Brew Espresso',                 'hot-coffee', 'Rich and bold espresso shot',                            300,  'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&q=80', true, false),
+('Brew Espresso',                 'hot-coffee', 'Rich and bold espresso shot',                            300,  'img/brew espresso.png', true, false),
 ('Golden Beans Latte',            'hot-coffee', 'Smooth latte with golden aroma',                         440,  'https://images.unsplash.com/photo-1561047029-3000c68339ca?w=400&q=80', true, false),
 ('Cloud Brew Flat White Latte',   'hot-coffee', 'Creamy flat white with velvety microfoam',               435,  'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?w=400&q=80', true, false),
 ('Royal Beans Spanish Latte',     'hot-coffee', 'Our signature Spanish latte — a customer favourite',     450,  'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&q=80', true, true),
