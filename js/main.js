@@ -462,6 +462,27 @@ $(document).ready(function () {
         if (window.innerWidth >= 768 && typeof AOS !== 'undefined') AOS.refreshHard();
     }
 
+    // Mouse-reactive 3D tilt on the Fan Favorites product image only
+    // (mirrors the addon modal image parallax above) — the card itself
+    // stays put, just a plain lift-on-hover.
+    $(document).on('mousemove', '.fav-card-img', function (e) {
+        if (window.innerWidth < 768) return;
+        const img = this.querySelector('img');
+        if (!img) return;
+        const rect = this.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        img.style.transition = 'transform 0.1s ease-out';
+        img.style.transform = `perspective(900px) rotateY(${px * 22}deg) rotateX(${-py * 22}deg) scale(1.12) translateZ(35px)`;
+    });
+
+    $(document).on('mouseleave', '.fav-card-img', function () {
+        const img = this.querySelector('img');
+        if (!img) return;
+        img.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+        img.style.transform = '';
+    });
+
     function renderUpsell() {
         const $section = $('#upsellSection');
         if (!$section.length || !menuItems.length || cart.length === 0) {

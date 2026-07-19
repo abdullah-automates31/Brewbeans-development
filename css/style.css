@@ -4255,6 +4255,7 @@ textarea:focus-visible {
     box-shadow: var(--shadow);
     transition: var(--transition);
     border: 1px solid var(--border);
+    position: relative;
 }
 
 .fav-card:hover {
@@ -4271,6 +4272,7 @@ textarea:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
+    perspective: 900px;
 }
 
 .fav-card-img img {
@@ -4280,11 +4282,33 @@ textarea:focus-visible {
     object-position: center;
     display: block;
     padding: 0.5rem;
-    transition: var(--transition-slow);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: perspective(900px) rotateX(0) rotateY(0) scale(1) translateZ(0);
+    will-change: transform;
 }
 
-.fav-card:hover .fav-card-img img {
-    transform: scale(1.07);
+/* Fallback for touch/keyboard focus where JS tilt never fires */
+.fav-card-img:hover img {
+    transform: perspective(900px) rotateX(6deg) rotateY(-6deg) scale(1.1) translateZ(30px);
+}
+
+/* Diagonal gloss sweep confined to the image, not the whole card */
+.fav-card-img::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.6) 50%, transparent 60%);
+    background-size: 250% 250%;
+    background-position: 120% 120%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.4s ease, background-position 0.8s ease;
+}
+
+.fav-card-img:hover::before {
+    opacity: 1;
+    background-position: -20% -20%;
 }
 
 .fav-tag {
@@ -4298,6 +4322,7 @@ textarea:focus-visible {
     font-size: 0.75rem;
     font-weight: 700;
     box-shadow: 0 2px 8px rgba(217,119,6,0.4);
+    z-index: 3;
 }
 
 .fav-card-body {
