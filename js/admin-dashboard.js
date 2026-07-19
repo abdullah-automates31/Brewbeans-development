@@ -1049,17 +1049,23 @@
       hourCounts[h]++;
     });
     const maxCount = Math.max(1, ...hourCounts);
-    const heatGrid = document.getElementById('peakHoursGrid');
-    if (heatGrid) {
-      heatGrid.innerHTML = hourCounts.map((count, h) => {
-        const opacity = count === 0 ? 0.06 : 0.15 + (count / maxCount) * 0.85;
-        const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h-12}pm`;
-        return `<div class="heat-cell" title="${label}: ${count} order${count !== 1 ? 's' : ''}"
-          style="background:rgba(46,139,87,${opacity.toFixed(2)})">
-          <span class="heat-hour">${label}</span>
-          ${count > 0 ? `<span class="heat-count">${count}</span>` : ''}
+    const heatWrap = document.getElementById('peakHoursGrid');
+    if (heatWrap) {
+      const hourLabel = h => h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+      const cells = hourCounts.map((count, h) => {
+        const opacity = count === 0 ? 0.07 : 0.2 + (count / maxCount) * 0.8;
+        const delay   = (h * 18).toFixed(0);
+        const hasOrders = count > 0;
+        return `<div class="heat-cell${hasOrders ? ' has-orders' : ''}"
+          title="${hourLabel(h)}: ${count} order${count !== 1 ? 's' : ''}"
+          style="background:rgba(46,139,87,${opacity.toFixed(2)});animation-delay:${delay}ms">
+          ${hasOrders ? `<span class="heat-count">${count}</span>` : ''}
         </div>`;
       }).join('');
+      const labels = hourCounts.map((_, h) =>
+        `<div class="heat-label">${hourLabel(h)}</div>`
+      ).join('');
+      heatWrap.innerHTML = `<div class="heat-grid">${cells}</div><div class="heat-labels">${labels}</div>`;
     }
   }
 

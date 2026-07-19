@@ -1339,22 +1339,43 @@
 
     /* ── ANALYTICS ENHANCEMENTS ── */
     .chart-wrap { padding: 1rem 0 0.5rem; }
+
+    @keyframes heatPop {
+      from { opacity: 0; transform: scaleY(0.4); }
+      to   { opacity: 1; transform: scaleY(1); }
+    }
+    .heat-wrap { overflow-x: auto; padding-bottom: 0.25rem; }
     .heat-grid {
-      display: grid; grid-template-columns: repeat(24, 1fr);
-      gap: 3px; padding: 0.5rem 0;
+      display: grid; grid-template-columns: repeat(24, minmax(36px, 1fr));
+      gap: 4px; min-width: 640px;
+    }
+    .heat-labels {
+      display: grid; grid-template-columns: repeat(24, minmax(36px, 1fr));
+      gap: 4px; margin-top: 5px; min-width: 640px;
+    }
+    .heat-label {
+      text-align: center; font-size: 0.6rem;
+      color: var(--text-light); font-weight: 500;
+      white-space: nowrap; overflow: hidden;
     }
     .heat-cell {
-      height: 34px; border-radius: 4px; background: rgba(46,139,87,0.08);
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; position: relative; cursor: default;
+      height: 44px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; cursor: default;
+      transform-origin: bottom;
+      animation: heatPop 0.35s ease backwards;
     }
-    .heat-cell .heat-hour { font-size: 0.58rem; color: var(--text-light); font-weight: 500; }
-    .heat-cell .heat-count { font-size: 0.65rem; font-weight: 700; color: var(--primary); }
+    .heat-cell .heat-count {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--primary); line-height: 1;
+    }
+    .heat-cell.has-orders .heat-count { color: white; }
     .heat-cell[title]:hover::after {
       content: attr(title); position: absolute; bottom: 110%; left: 50%;
       transform: translateX(-50%); background: var(--primary); color: white;
-      padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.72rem;
+      padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.72rem;
       white-space: nowrap; z-index: 10; pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
   </style>
 </head>
@@ -1675,7 +1696,7 @@
       <div class="card" style="margin-bottom:1rem">
         <div class="card-header"><h3>Peak Order Hours <span style="font-size:0.75rem;font-weight:400;color:var(--text-light)">(this month)</span></h3></div>
         <div class="card-body">
-          <div class="heat-grid" id="peakHoursGrid">
+          <div class="heat-wrap" id="peakHoursGrid">
             <div class="loading-spinner"><div class="spinner-ring"></div></div>
           </div>
         </div>
