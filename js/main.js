@@ -13,13 +13,7 @@ $(document).ready(function () {
     const POPULAR_ITEMS = ['Royal Beans Spanish Latte', 'Lotus Frappe', 'Caramel Rush Brew', 'Chocolate Chip Cookies'];
     const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
 
-    // Badge labels shown on menu card top-right. Add/edit item names here to change badges.
-    const BADGE_MAP = {
-        'Lotus Frappe':               { label: '🔥 Best Seller',    cls: 'badge-bestseller' },
-        'Royal Beans Spanish Latte':  { label: '⭐ Fan Favorite',   cls: 'badge-popular'    },
-        'Caramel Rush Brew':          { label: '📈 Trending',       cls: 'badge-trending'   },
-        'Chocolate Chip Cookies':     { label: '🧒 Kids Favourite', cls: 'badge-kids'       },
-    };
+    let dynamicBadgeMap = {}; // populated from get_menu_badges() RPC — keyed by menu_item_id
     const FOOD_CATS     = ['desserts', 'sandwiches'];
 
     // Shop coordinates (Gulshan-e-Iqbal, Karachi)
@@ -318,7 +312,7 @@ $(document).ready(function () {
             }
 
             filteredItems.forEach((item) => {
-                const _b = BADGE_MAP[item.name];
+                const _b = dynamicBadgeMap[item.id];
                 const badgeHtml = _b
                     ? `<span class="menu-item-tag ${_b.cls}">${_b.label}</span>`
                     : item.is_popular ? '<span class="menu-item-tag badge-popular">⭐ Popular</span>' : '';
@@ -438,11 +432,16 @@ $(document).ready(function () {
         const $grid = $('#menuGrid');
         $grid.html('<div class="col-12 text-center py-5"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-muted">Loading menu...</p></div>');
 
-        const { data, error } = await supabaseClient
-            .from('menu_items')
-            .select('*')
-            .eq('is_available', true)
-            .order('id');
+        const [{ data, error }, { data: badgeRows }] = await Promise.all([
+            supabaseClient.from('menu_items').select('*').eq('is_available', true).order('id'),
+            supabaseClient.rpc('get_menu_badges')
+        ]);
+
+        const BADGE_LABEL = { 'badge-bestseller': '🔥 Best Seller', 'badge-popular': '⭐ Fan Favorite', 'badge-trending': '📈 Trending' };
+        dynamicBadgeMap = {};
+        (badgeRows || []).forEach(r => {
+            if (r.badge_cls) dynamicBadgeMap[r.menu_item_id] = { label: BADGE_LABEL[r.badge_cls] || r.badge, cls: r.badge_cls };
+        });
 
         if (error || !data || !data.length) {
             $grid.html('<div class="col-12 text-center py-5 text-muted">Menu unavailable. Please try again later.</div>');
