@@ -49,9 +49,9 @@
 
   // ── SHOP STATUS ──
   async function checkShopStatus() {
-    const { data } = await supabaseClient.rpc('get_business_hours');
+    const { data } = await supabaseClient.from('business_hours').select('*').order('day_of_week');
     if (!data) return;
-    const hours = Array.isArray(data) ? data : JSON.parse(data);
+    const hours = data;
     const now = new Date();
     const day = now.getDay();
     const todayHours = hours.find(h => h.day_of_week === day);
@@ -1278,6 +1278,15 @@
 
     // Save Hours button
     document.getElementById('saveHoursBtn')?.addEventListener('click', saveHours);
+
+    // Hours quick toggles
+    document.getElementById('closeTodayBtn')?.addEventListener('click', closeTodayQuick);
+    document.getElementById('openAllWeekBtn')?.addEventListener('click', openAllWeekQuick);
+
+    // Bulk action bar buttons
+    document.getElementById('bulkMarkPreparing')?.addEventListener('click', () => bulkUpdateStatus('preparing'));
+    document.getElementById('bulkMarkDelivered')?.addEventListener('click', () => bulkUpdateStatus('delivered'));
+    document.getElementById('bulkMarkCancelled')?.addEventListener('click', () => bulkUpdateStatus('cancelled'));
 
     // Addons page "Add Group" button
     document.querySelector('#page-addons .btn-primary')?.addEventListener('click', () => openGroupModal());

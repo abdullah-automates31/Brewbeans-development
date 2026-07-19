@@ -1518,9 +1518,9 @@
     <!-- BULK ACTION BAR -->
     <div class="bulk-action-bar" id="bulkActionBar">
       <span class="bulk-count" id="bulkCount">0 orders selected</span>
-      <button class="btn-bulk-action preparing" onclick="bulkUpdateStatus('preparing')"><i class="bi bi-clock"></i> Mark Preparing</button>
-      <button class="btn-bulk-action delivered" onclick="bulkUpdateStatus('delivered')"><i class="bi bi-check-circle"></i> Mark Delivered</button>
-      <button class="btn-bulk-action cancel" onclick="bulkUpdateStatus('cancelled')"><i class="bi bi-x-circle"></i> Cancel</button>
+      <button class="btn-bulk-action preparing" id="bulkMarkPreparing"><i class="bi bi-clock"></i> Mark Preparing</button>
+      <button class="btn-bulk-action delivered" id="bulkMarkDelivered"><i class="bi bi-check-circle"></i> Mark Delivered</button>
+      <button class="btn-bulk-action cancel" id="bulkMarkCancelled"><i class="bi bi-x-circle"></i> Cancel</button>
     </div>
 
     <!-- MENU PAGE -->
@@ -1551,10 +1551,10 @@
         </div>
         <div class="card-body" style="padding-bottom:0">
           <div class="hours-quick-btns">
-            <button class="btn-quick-hours danger" onclick="closeTodayQuick()">
+            <button class="btn-quick-hours danger" id="closeTodayBtn">
               <i class="bi bi-moon-stars"></i> Close Today
             </button>
-            <button class="btn-quick-hours success" onclick="openAllWeekQuick()">
+            <button class="btn-quick-hours success" id="openAllWeekBtn">
               <i class="bi bi-sun"></i> Open All Week
             </button>
           </div>
