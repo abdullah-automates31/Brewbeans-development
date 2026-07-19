@@ -411,7 +411,7 @@ html.bb-no-splash #loading-screen {
     width: 116px;
     height: 116px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--primary);
     box-shadow: 0 12px 28px rgba(15, 61, 46, 0.22), 0 0 0 1px rgba(15, 61, 46, 0.06);
     padding: 14px;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -434,13 +434,12 @@ html.bb-no-splash #loading-screen {
 }
 
 /* The logo artwork itself is off-white/cream on a transparent
-   background — correct on the brand's dark green (footer, hero image)
-   but nearly invisible directly on this badge's cream fill.
-   brightness(0) recolors only the rendered pixels to solid dark,
-   keeping the same transparent background and exact silhouette. */
+   background — needs to read as pure white against this badge's
+   dark green fill. brightness(0) invert(1) recolors only the
+   rendered pixels to solid white, keeping the same transparent
+   background and exact silhouette. */
 #mainNav .brand-logo {
-    filter: brightness(0);
-    opacity: 0.88;
+    filter: brightness(0) invert(1);
 }
 
 .brand-text {
