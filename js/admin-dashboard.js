@@ -10,6 +10,14 @@
   let pollTimer    = null;
   let activeModalOrder = null;
 
+  let dateFrom           = '';
+  let dateTo             = '';
+  let paymentMethodFilter = '';
+  let paymentStatusFilter = '';
+  let bulkSelectMode     = false;
+  let selectedOrderIds   = new Set();
+  let revenueChartInstance = null;
+
   // ── AUTH CHECK ──
   Promise.race([
     supabaseClient.auth.getSession(),
@@ -41,9 +49,9 @@
 
   // ── SHOP STATUS ──
   async function checkShopStatus() {
-    const { data } = await supabaseClient.rpc('get_business_hours');
+    const { data } = await supabaseClient.from('business_hours').select('*').order('day_of_week');
     if (!data) return;
-    const hours = Array.isArray(data) ? data : JSON.parse(data);
+    const hours = data;
     const now = new Date();
     const day = now.getDay();
     const todayHours = hours.find(h => h.day_of_week === day);
@@ -183,6 +191,19 @@
       );
     }
 
+    if (dateFrom) {
+      filtered = filtered.filter(o => o.created_at.split('T')[0] >= dateFrom);
+    }
+    if (dateTo) {
+      filtered = filtered.filter(o => o.created_at.split('T')[0] <= dateTo);
+    }
+    if (paymentMethodFilter) {
+      filtered = filtered.filter(o => o.payment_method === paymentMethodFilter);
+    }
+    if (paymentStatusFilter) {
+      filtered = filtered.filter(o => o.payment_status === paymentStatusFilter);
+    }
+
     if (!filtered.length) {
       list.innerHTML = `<div class="empty-state"><i class="bi bi-inbox"></i><p>No orders found</p></div>`;
       return;
@@ -196,16 +217,22 @@
       const nextStatus = STATUS_FLOW[o.status];
       const payClass = o.payment_method === 'cod' ? 'payment-cod' : (o.payment_status === 'paid' ? 'payment-paid' : 'payment-pending');
       const payLabel = o.payment_method === 'cod' ? 'COD' : o.payment_method.toUpperCase();
+      const isSelected = selectedOrderIds.has(o.order_number);
 
       return `
-      <div class="order-card${isNew ? ' is-new' : ''}" data-order-id="${o.id}" style="cursor:pointer">
+      <div class="order-card${isNew ? ' is-new' : ''}${bulkSelectMode ? ' selectable' : ''}${isSelected ? ' selected-order' : ''}" data-order-id="${o.id}" data-order-number="${o.order_number}" style="cursor:pointer">
         <div class="order-top">
-          <div>
-            <div class="order-number">
-              #${escHtml(o.order_number)}
-              ${isNew ? '<span class="new-order-badge" style="margin-left:0.4rem">NEW</span>' : ''}
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <div class="order-select-cb">
+              <input type="checkbox" data-action="bulk-select" data-order-number="${o.order_number}" ${isSelected ? 'checked' : ''}>
             </div>
-            <div class="order-time">${new Date(o.created_at).toLocaleString()}</div>
+            <div>
+              <div class="order-number">
+                #${escHtml(o.order_number)}
+                ${isNew ? '<span class="new-order-badge" style="margin-left:0.4rem">NEW</span>' : ''}
+              </div>
+              <div class="order-time">${new Date(o.created_at).toLocaleString()}</div>
+            </div>
           </div>
           <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
             <span class="status-badge status-${o.status}">${STATUS_LABEL[o.status] || o.status}</span>
@@ -228,12 +255,59 @@
             ${o.delivery_charge > 0 ? `<span style="font-size:0.75rem;color:var(--text-light);font-weight:400"> (Delivery: Rs.${Number(o.delivery_charge).toLocaleString()})</span>` : ''}
           </div>
           <div class="order-actions">
-            ${nextStatus ? `<button class="btn-action next" data-order-number="${o.order_number}" data-next-status="${nextStatus}">${NEXT_LABEL[o.status]}</button>` : ''}
-            ${!['delivered','cancelled'].includes(o.status) ? `<button class="btn-action cancel" data-order-number="${o.order_number}" data-customer="${escHtml(o.customer_name)}">Cancel</button>` : ''}
+            ${!bulkSelectMode && nextStatus ? `<button class="btn-action next" data-order-number="${o.order_number}" data-next-status="${nextStatus}">${NEXT_LABEL[o.status]}</button>` : ''}
+            ${!bulkSelectMode && !['delivered','cancelled'].includes(o.status) ? `<button class="btn-action cancel" data-order-number="${o.order_number}" data-customer="${escHtml(o.customer_name)}">Cancel</button>` : ''}
           </div>
         </div>
       </div>`;
     }).join('');
+  }
+
+  // ── BULK SELECT ──
+  function toggleBulkMode() {
+    bulkSelectMode = !bulkSelectMode;
+    selectedOrderIds.clear();
+    const btn = document.getElementById('bulkSelectBtn');
+    btn.classList.toggle('active', bulkSelectMode);
+    btn.innerHTML = bulkSelectMode
+      ? '<i class="bi bi-x-lg"></i> Cancel'
+      : '<i class="bi bi-check2-square"></i> Select';
+    updateBulkBar();
+    renderOrders();
+  }
+
+  function toggleOrderSelect(orderNumber) {
+    if (selectedOrderIds.has(orderNumber)) selectedOrderIds.delete(orderNumber);
+    else selectedOrderIds.add(orderNumber);
+    updateBulkBar();
+    const card = document.querySelector(`.order-card[data-order-number="${orderNumber}"]`);
+    if (card) {
+      card.classList.toggle('selected-order', selectedOrderIds.has(orderNumber));
+      const cb = card.querySelector('input[data-action="bulk-select"]');
+      if (cb) cb.checked = selectedOrderIds.has(orderNumber);
+    }
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulkActionBar');
+    const count = document.getElementById('bulkCount');
+    const n = selectedOrderIds.size;
+    if (bar) bar.classList.toggle('visible', bulkSelectMode && n > 0);
+    if (count) count.textContent = `${n} order${n !== 1 ? 's' : ''} selected`;
+  }
+
+  async function bulkUpdateStatus(newStatus) {
+    if (!selectedOrderIds.size) return;
+    const nums = [...selectedOrderIds];
+    const { error } = await supabaseClient
+      .from('orders')
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .in('order_number', nums);
+    if (error) { showToast('Bulk update failed', 'error'); return; }
+    showToast(`${nums.length} order${nums.length > 1 ? 's' : ''} updated to ${STATUS_LABEL[newStatus] || newStatus}`, 'success');
+    selectedOrderIds.clear();
+    updateBulkBar();
+    await loadOrders();
   }
 
   // ── ORDER DETAIL MODAL ──
@@ -708,6 +782,29 @@
     checkShopStatus();
   }
 
+  async function closeTodayQuick() {
+    const today = new Date().getDay();
+    const { error } = await supabaseClient
+      .from('business_hours')
+      .update({ is_closed: true })
+      .eq('day_of_week', today);
+    if (error) { showToast('Failed to close today', 'error'); return; }
+    showToast(`${DAY_NAMES[today]} marked as closed`, 'success');
+    checkShopStatus();
+    await loadHours();
+  }
+
+  async function openAllWeekQuick() {
+    const { error } = await supabaseClient
+      .from('business_hours')
+      .update({ is_closed: false })
+      .gte('day_of_week', 0);
+    if (error) { showToast('Failed to update hours', 'error'); return; }
+    showToast('All days set to open', 'success');
+    checkShopStatus();
+    await loadHours();
+  }
+
   // ── STAFF PINs ──
   let editingStaffId = null;
 
@@ -872,6 +969,7 @@
       : '<p style="color:var(--text-light);font-size:0.875rem">No sales data yet.</p>';
     document.getElementById('topItems').innerHTML = topHtml;
 
+    // ── Last 7 days bar chart ──
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now - i * 86400000);
@@ -885,27 +983,90 @@
       dayMap[day].rev += o.total || 0;
     });
     const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const tableRows = days.map(d => {
-      const { count = 0, rev = 0 } = dayMap[d] || {};
+    const chartLabels = days.map(d => {
       const date = new Date(d + 'T00:00:00');
-      const label = `${dayLabels[date.getDay()]} ${date.getDate()}/${date.getMonth()+1}`;
-      return `<tr style="border-bottom:1px solid var(--border-light)">
-        <td style="padding:0.6rem 1rem;font-size:0.875rem">${label}</td>
-        <td style="padding:0.6rem 1rem;font-size:0.875rem;text-align:center">${count}</td>
-        <td style="padding:0.6rem 1rem;font-size:0.875rem;text-align:right">Rs. ${rev.toLocaleString()}</td>
-      </tr>`;
-    }).join('');
-    document.getElementById('last7Days').innerHTML = `
-      <table style="width:100%;border-collapse:collapse">
-        <thead>
-          <tr style="border-bottom:2px solid var(--border-light)">
-            <th style="padding:0.5rem 1rem;text-align:left;font-size:0.78rem;color:var(--text-light);font-weight:600">DATE</th>
-            <th style="padding:0.5rem 1rem;text-align:center;font-size:0.78rem;color:var(--text-light);font-weight:600">ORDERS</th>
-            <th style="padding:0.5rem 1rem;text-align:right;font-size:0.78rem;color:var(--text-light);font-weight:600">REVENUE</th>
-          </tr>
-        </thead>
-        <tbody>${tableRows}</tbody>
-      </table>`;
+      return `${dayLabels[date.getDay()]} ${date.getDate()}/${date.getMonth()+1}`;
+    });
+    const chartRevData = days.map(d => (dayMap[d] || {}).rev || 0);
+    const chartOrderData = days.map(d => (dayMap[d] || {}).count || 0);
+
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    const ctx = document.getElementById('revenueChart');
+    if (ctx) {
+      revenueChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            {
+              label: 'Revenue (Rs.)',
+              data: chartRevData,
+              backgroundColor: 'rgba(46,139,87,0.75)',
+              borderRadius: 6,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Orders',
+              data: chartOrderData,
+              type: 'line',
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245,158,11,0.12)',
+              borderWidth: 2,
+              pointRadius: 4,
+              pointBackgroundColor: '#f59e0b',
+              fill: true,
+              tension: 0.35,
+              yAxisID: 'y2',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { font: { family: 'Poppins', size: 12 }, boxWidth: 14 } },
+            tooltip: {
+              callbacks: {
+                label: ctx => ctx.dataset.label === 'Revenue (Rs.)'
+                  ? ` Rs. ${ctx.parsed.y.toLocaleString()}`
+                  : ` ${ctx.parsed.y} orders`
+              }
+            }
+          },
+          scales: {
+            y:  { position: 'left',  beginAtZero: true, ticks: { callback: v => 'Rs.' + v.toLocaleString(), font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y2: { position: 'right', beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { drawOnChartArea: false } },
+            x:  { ticks: { font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ── Peak hours heatmap ──
+    const hourCounts = new Array(24).fill(0);
+    orders.forEach(o => {
+      const h = new Date(o.created_at).getHours();
+      hourCounts[h]++;
+    });
+    const maxCount = Math.max(1, ...hourCounts);
+    const heatWrap = document.getElementById('peakHoursGrid');
+    if (heatWrap) {
+      const hourLabel = h => h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h - 12}pm`;
+      const cells = hourCounts.map((count, h) => {
+        const opacity = count === 0 ? 0.07 : 0.2 + (count / maxCount) * 0.8;
+        const delay   = (h * 18).toFixed(0);
+        const hasOrders = count > 0;
+        return `<div class="heat-cell${hasOrders ? ' has-orders' : ''}"
+          title="${hourLabel(h)}: ${count} order${count !== 1 ? 's' : ''}"
+          style="background:rgba(46,139,87,${opacity.toFixed(2)});animation-delay:${delay}ms">
+          ${hasOrders ? `<span class="heat-count">${count}</span>` : ''}
+        </div>`;
+      }).join('');
+      const labels = hourCounts.map((_, h) =>
+        `<div class="heat-label">${hourLabel(h)}</div>`
+      ).join('');
+      heatWrap.innerHTML = `<div class="heat-grid">${cells}</div><div class="heat-labels">${labels}</div>`;
+    }
   }
 
   // ── MENU MANAGEMENT ──
@@ -1101,11 +1262,37 @@
       btn.addEventListener('click', () => filterOrders(btn.dataset.filter, btn));
     });
 
+    // Bulk select toggle
+    document.getElementById('bulkSelectBtn')?.addEventListener('click', toggleBulkMode);
+
+    // Advanced filters
+    document.getElementById('filterDateFrom')?.addEventListener('change', e => { dateFrom = e.target.value; renderOrders(); });
+    document.getElementById('filterDateTo')?.addEventListener('change',   e => { dateTo   = e.target.value; renderOrders(); });
+    document.getElementById('filterPayMethod')?.addEventListener('change', e => { paymentMethodFilter = e.target.value; renderOrders(); });
+    document.getElementById('filterPayStatus')?.addEventListener('change', e => { paymentStatusFilter = e.target.value; renderOrders(); });
+    document.getElementById('clearFiltersBtn')?.addEventListener('click', () => {
+      dateFrom = dateTo = paymentMethodFilter = paymentStatusFilter = '';
+      document.getElementById('filterDateFrom').value = '';
+      document.getElementById('filterDateTo').value   = '';
+      document.getElementById('filterPayMethod').value = '';
+      document.getElementById('filterPayStatus').value = '';
+      renderOrders();
+    });
+
     // Menu page "Add Item" button
     document.querySelector('#page-menu .btn-primary')?.addEventListener('click', () => openMenuModal());
 
     // Save Hours button
     document.getElementById('saveHoursBtn')?.addEventListener('click', saveHours);
+
+    // Hours quick toggles
+    document.getElementById('closeTodayBtn')?.addEventListener('click', closeTodayQuick);
+    document.getElementById('openAllWeekBtn')?.addEventListener('click', openAllWeekQuick);
+
+    // Bulk action bar buttons
+    document.getElementById('bulkMarkPreparing')?.addEventListener('click', () => bulkUpdateStatus('preparing'));
+    document.getElementById('bulkMarkDelivered')?.addEventListener('click', () => bulkUpdateStatus('delivered'));
+    document.getElementById('bulkMarkCancelled')?.addEventListener('click', () => bulkUpdateStatus('cancelled'));
 
     // Addons page "Add Group" button
     document.querySelector('#page-addons .btn-primary')?.addEventListener('click', () => openGroupModal());
@@ -1154,6 +1341,16 @@
 
     // Event delegation: ordersList
     document.getElementById('ordersList')?.addEventListener('click', e => {
+      // Bulk select checkbox
+      const cb = e.target.closest('input[data-action="bulk-select"]');
+      if (cb) { e.stopPropagation(); toggleOrderSelect(cb.dataset.orderNumber); return; }
+
+      // In bulk mode, clicking the card itself toggles selection
+      if (bulkSelectMode) {
+        const card = e.target.closest('.order-card');
+        if (card) { toggleOrderSelect(card.dataset.orderNumber); return; }
+      }
+
       const actionBtn = e.target.closest('.btn-action');
       if (actionBtn) {
         e.stopPropagation();

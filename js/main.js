@@ -12,6 +12,8 @@ $(document).ready(function () {
     let menuItems = [];
     const POPULAR_ITEMS = ['Royal Beans Spanish Latte', 'Lotus Frappe', 'Caramel Rush Brew', 'Chocolate Chip Cookies'];
     const COFFEE_CATS   = ['hot-coffee', 'cold-coffee', 'frappes'];
+
+    let dynamicBadgeMap = {}; // populated from get_menu_badges() RPC — keyed by menu_item_id
     const FOOD_CATS     = ['desserts', 'sandwiches'];
 
     // Shop coordinates (Gulshan-e-Iqbal, Karachi)
@@ -392,13 +394,17 @@ $(document).ready(function () {
             }
 
             filteredItems.forEach((item) => {
+                const _b = dynamicBadgeMap[item.id];
+                const badgeHtml = _b
+                    ? `<span class="menu-item-tag ${_b.cls}">${_b.label}</span>`
+                    : item.is_popular ? '<span class="menu-item-tag badge-popular">⭐ Popular</span>' : '';
                 const html = `
                     <div class="col-12 col-md-6 col-lg-3 motion-pop">
                         <div class="menu-item" data-id="${item.id}">
                             <div class="menu-item-img">
                                 <img src="${item.image}" alt="${item.name}" loading="lazy">
                                 <span class="menu-item-badge">${item.category.replace('-', ' ')}</span>
-                                ${item.is_popular ? '<span class="menu-item-popular">⭐ Popular</span>' : ''}
+                                ${badgeHtml}
                             </div>
                             <div class="menu-item-content">
                                 <h3 class="menu-item-name">${item.name}</h3>
@@ -508,11 +514,16 @@ $(document).ready(function () {
         const $grid = $('#menuGrid');
         $grid.html('<div class="col-12 text-center py-5"><div class="spinner-border text-success" role="status"></div><p class="mt-3 text-muted">Loading menu...</p></div>');
 
-        const { data, error } = await supabaseClient
-            .from('menu_items')
-            .select('*')
-            .eq('is_available', true)
-            .order('id');
+        const [{ data, error }, { data: badgeRows }] = await Promise.all([
+            supabaseClient.from('menu_items').select('*').eq('is_available', true).order('id'),
+            supabaseClient.rpc('get_menu_badges')
+        ]);
+
+        const BADGE_LABEL = { 'badge-bestseller': '🔥 Best Seller', 'badge-popular': '⭐ Fan Favorite', 'badge-trending': '📈 Trending' };
+        dynamicBadgeMap = {};
+        (badgeRows || []).forEach(r => {
+            if (r.badge_cls) dynamicBadgeMap[r.menu_item_id] = { label: BADGE_LABEL[r.badge_cls] || r.badge, cls: r.badge_cls };
+        });
 
         if (error || !data || !data.length) {
             $grid.html('<div class="col-12 text-center py-5 text-muted">Menu unavailable. Please try again later.</div>');
